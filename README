@@ -11,6 +11,11 @@ Background on PortableContacts:
 http://portablecontacts.net/
 http://wiki.portablecontacts.net/
 
+I wish there was a Python server library for any of the components here,
+e.g. XRD/XRDS-Simple! I only found client libraries though:
+http://mrtopf.de/blog/data-portability/announcing-pydataportability-01-technical/
+https://github.com/gwachob/pydiscovery
+
 To use this in a PortableContacts client, you'll need to hard-code exceptions
 for the facebook.com and twitter.com hosts and redirect PortableContacts HTTP
 requests to the corresponding endpoint above. (The user URI may use either

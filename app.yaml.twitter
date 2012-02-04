@@ -6,6 +6,6 @@ api_version: 1
 default_expiration: 1d
 
 handlers:
-- url: (/|/user|/.well-known/host-meta)
+- url: /|/poco/.*|/.well-known/.*
   script: app.py
   secure: always
