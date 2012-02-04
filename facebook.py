@@ -95,15 +95,19 @@ def to_poco(fb):
         'region': addr['state'],
         'country': addr['country'],
         'postalCode': addr['zip'],
+        'type': 'home',
         }]
   elif 'location' in fb:
-    pc['addresses'] = [{'formatted': fb['location'].get('name')}]
+    pc['addresses'] = [{
+        'formatted': fb['location'].get('name'),
+        'type': 'home',
+        }]
 
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
+  if 'mobile_phone' in fb:
+    pc['phoneNumbers'] = [{
+        'value': fb['mobile_phone'],
+        'type': 'mobile',
+        }]
 
   if '' in fb:
     pc[''] = fb['']

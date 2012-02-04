@@ -33,7 +33,9 @@ class FacebookTest(testutil.HandlerTest):
         'displayName': 'Ryan Barrett',
         'name': {'formatted': 'Ryan Barrett'},
         'accounts': [{'domain': 'facebook.com', 'userid': '212038'}],
-        'addresses': [{'formatted': 'San Francisco, California'}],
+        'addresses': [{'formatted': 'San Francisco, California',
+                       'type': 'home',
+                       }],
         },
       facebook.to_poco({
         'id': '212038',
@@ -55,7 +57,9 @@ class FacebookTest(testutil.HandlerTest):
           'region': 'California',
           'postalCode': '94301',
           'country': 'United States',
+          'type': 'home',
           }],
+        'phoneNumbers': [{'value': '1234567890', 'type': 'mobile'}],
         'gender': 'male',
         'emails': [{'value': 'ryan@example.com',
                     'type': 'home',
@@ -71,18 +75,6 @@ class FacebookTest(testutil.HandlerTest):
       #   {
       #     'value': 'plaxodev8',
       #     'type': 'aim'
-      #   }
-      # ],
-      # 'addresses': [
-      #   {
-      #     'type': 'home',
-      #     'streetAddress': '742 Evergreen Terrace\nSuite 123',
-      #     'locality': 'Springfield',
-
-      #     'region': 'VT',
-      #     'postalCode': '12345',
-      #     'country': 'USA',
-      #     'formatted': '742 Evergreen Terrace\nSuite 123\nSpringfield, VT 12345 USA'
       #   }
       # ],
         'organizations': [
@@ -116,6 +108,7 @@ class FacebookTest(testutil.HandlerTest):
             'country': 'United States',
             'zip': '94301',
             },
+          'mobile_phone': '1234567890',
           'work': [{
               'employer': {'id': '104958162837', 'name': 'Google'},
               'projects': [{
