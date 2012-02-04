@@ -1,6 +1,6 @@
 This is a stand-in, proxy PortableContacts server for sites that don't implement
-webfinger themselves. It currently has implementations for Facebook and Twitter,
-served at these endpoints:
+PortableContacts themselves. It currently has implementations for Facebook and
+Twitter, served at these endpoints:
 
 http://facebook-portablecontacts.appspot.com/
 http://twitter-portablecontacts.appspot.com/
