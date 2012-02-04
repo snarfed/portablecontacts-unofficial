@@ -1,5 +1,13 @@
 #!/usr/bin/python
 """Facebook handler and schema mapping code.
+
+NOTE:
+eventually fb will turn phone and address back on. when they do,
+add scopes:user_mobile_phone,user_address to get them.
+
+background:
+https://developers.facebook.com/blog/post/447/
+https://developers.facebook.com/blog/post/446/
 """
 
 __author__ = ['Ryan Barrett <portablecontacts-unofficial@ryanb.org>']
@@ -19,12 +27,18 @@ from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+ACCOUNT_DOMAIN = 'facebook.com'
+
 
 # schema mapping
 # TODO: addresses, IMs, follow redirects to get pictures
 def to_poco(fb):
   pc = collections.defaultdict(dict)
   pc['id'] = fb['id']
+  pc['accounts'] = [{'domain': ACCOUNT_DOMAIN, 'userid': fb['id']}]
+
+  if 'username' in fb:
+    pc['accounts'][0]['username'] = fb['username']
 
   if 'name' in fb:
     pc['displayName'] = fb['name']
@@ -73,11 +87,17 @@ def to_poco(fb):
     if 'year' in school:
       org['endDate'] = school['year']
 
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
+  if 'address' in fb:
+    addr = fb['address']
+    pc['addresses'] = [{
+        'streetAddress': addr['street'],
+        'locality': addr['city'],
+        'region': addr['state'],
+        'country': addr['country'],
+        'postalCode': addr['zip'],
+        }]
+  elif 'location' in fb:
+    pc['addresses'] = [{'formatted': fb['location'].get('name')}]
 
   if '' in fb:
     pc[''] = fb['']

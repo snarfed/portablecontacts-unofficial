@@ -22,19 +22,24 @@ class FacebookTest(testutil.HandlerTest):
 
   def test_to_poco_id_only(self):
     self.assert_equals(
-        {'id': '212038'},
+        {'id': '212038',
+         'accounts': [{'domain': 'facebook.com', 'userid': '212038'}],
+         },
         facebook.to_poco({'id': '212038'}))
 
   def test_to_poco_minimal(self):
     self.assert_equals({
-          'id': '212038',
-          'displayName': 'Ryan Barrett',
-          'name': {'formatted': 'Ryan Barrett'},
-          },
+        'id': '212038',
+        'displayName': 'Ryan Barrett',
+        'name': {'formatted': 'Ryan Barrett'},
+        'accounts': [{'domain': 'facebook.com', 'userid': '212038'}],
+        'addresses': [{'formatted': 'San Francisco, California'}],
+        },
       facebook.to_poco({
-          'id': '212038',
-          'name': 'Ryan Barrett',
-         }))
+        'id': '212038',
+        'name': 'Ryan Barrett',
+        'location': {'id': '123', 'name': 'San Francisco, California'},
+        }))
 
   def test_to_poco_full(self):
     self.assert_equals({
@@ -44,6 +49,13 @@ class FacebookTest(testutil.HandlerTest):
                  'givenName': 'Ryan',
                  'familyName': 'Barrett'},
         'birthday': '1980-10-01',
+        'addresses': [{
+          'streetAddress': '1 Palm Dr.',
+          'locality': 'Palo Alto',
+          'region': 'California',
+          'postalCode': '94301',
+          'country': 'United States',
+          }],
         'gender': 'male',
         'emails': [{'value': 'ryan@example.com',
                     'type': 'home',
@@ -73,19 +85,17 @@ class FacebookTest(testutil.HandlerTest):
       #     'formatted': '742 Evergreen Terrace\nSuite 123\nSpringfield, VT 12345 USA'
       #   }
       # ],
-      'organizations': [
+        'organizations': [
           {'name': 'Google', 'type': 'job', 'title': 'Software Engineer',
            'startDate': '2002-01', 'endDate': '2010-01'},
           {'name': 'IBM', 'type': 'job'},
           {'name': 'Polytechnic', 'type': 'school'},
           {'name': 'Stanford', 'type': 'school', 'endDate': '2002'},
           ],
-      # 'accounts': [
-      #   {
-      #     'domain': 'plaxo.com',
-      #     'userid': '2706'
-      #   }
-      # ]
+        'accounts': [{'domain': 'facebook.com',
+                      'userid': '212038',
+                      'username': 'snarfed.org',
+                      }],
         },
       facebook.to_poco({
           'id': '212038',
@@ -95,11 +105,18 @@ class FacebookTest(testutil.HandlerTest):
           'link': 'http://www.facebook.com/snarfed.org',
           'username': 'snarfed.org',
           'birthday': '10/01/1980',
-           # 'location': {
-           #   'id': '114952118516947',
-           #   'name': 'San Francisco, California'
-           # },
-           'work': [{
+          'location': {
+            'id': '123',
+            'name': 'San Francisco, California'
+            },
+          'address': {
+            'street': '1 Palm Dr.',
+            'city': 'Palo Alto',
+            'state': 'California',
+            'country': 'United States',
+            'zip': '94301',
+            },
+          'work': [{
               'employer': {'id': '104958162837', 'name': 'Google'},
               'projects': [{
                   'id': '399089423614',
@@ -127,9 +144,4 @@ class FacebookTest(testutil.HandlerTest):
            'gender': 'male',
            'email': 'ryan@example.com',
            'website': 'http://snarfed.org/',
-           # 'timezone': -8,
-           # 'locale': 'en_US',
-           # 'verified': true,
-           # 'updated_time': '2012-01-06T02:11:04+0000',
-           # 'type': 'user'
-                   }))
+          }))
