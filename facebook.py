@@ -2,8 +2,9 @@
 """Facebook handler and schema mapping code.
 
 NOTE:
-eventually fb will turn phone and address back on. when they do,
-add scopes:user_mobile_phone,user_address to get them.
+eventually fb will turn phone and address back on. when they do, add scopes:
+user_mobile_phone, user_address to get them. (same with IM addresses, but i
+couldn't find anywhere they talk about that at all.)
 
 background:
 https://developers.facebook.com/blog/post/447/
@@ -31,7 +32,7 @@ ACCOUNT_DOMAIN = 'facebook.com'
 
 
 # schema mapping
-# TODO: addresses, IMs, follow redirects to get pictures
+# TODO: follow redirects to get pictures
 def to_poco(fb):
   pc = collections.defaultdict(dict)
   pc['id'] = fb['id']
@@ -111,79 +112,6 @@ def to_poco(fb):
 
   if '' in fb:
     pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-  if '' in fb:
-    pc[''] = fb['']
-
-      # ],
-      # 'photos': [
-      #   {
-      #     'value': 'http://sample.site.org/photos/12345.jpg',
-      #     'type': 'thumbnail'
-      #   }
-      # ],
-      # 'ims': [
-      #   {
-      #     'value': 'plaxodev8',
-      #     'type': 'aim'
-      #   }
-      # ],
-      # 'addresses': [
-      #   {
-      #     'type': 'home',
-      #     'streetAddress': '742 Evergreen Terrace\nSuite 123',
-      #     'locality': 'Springfield',
-      #     'region': 'VT',
-      #     'postalCode': '12345',
-      #     'country': 'USA',
-      #     'formatted': '742 Evergreen Terrace\nSuite 123\nSpringfield, VT 12345 USA'
-      #   }
-      # ],
-      # 'organizations': [
-      #   {
-      #     'name': 'Burns Worldwide',
-      #     'title': 'Head Bee Guy'
-      #   }
-      # ],
-      # 'accounts': [
-      #   {
-      #     'domain': 'plaxo.com',
-      #     'userid': '2706'
-      #   }
-      # ]
 
   return dict(pc)
 
@@ -458,7 +386,6 @@ def to_poco(fb):
 #   def get(self):
 #     FacebookApp.get()._get_access_token_with_auth_code(
 #       self, self.request.params['code'], self.request.params['state'])
-    
 
 # class GotAccessToken(util.Handler):
 #   def get(self):
