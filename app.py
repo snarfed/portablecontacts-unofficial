@@ -39,6 +39,13 @@ APP_ID_HANDLERS = {
   }
 POCO_HANDLER = APP_ID_HANDLERS[APP_ID]
 
+# maps app id to source domain
+APP_ID_DOMAINS = {
+  'facebook-portablecontacts': 'facebook.com',
+  'twitter-portablecontacts': 'twitter.com',
+  }
+DOMAIN = APP_ID_DOMAINS[APP_ID]
+
 # app_identity.get_default_version_hostname() would be better here, but
 # it doesn't work in dev_appserver since that doesn't set
 # os.environ['DEFAULT_VERSION_HOSTNAME'].
