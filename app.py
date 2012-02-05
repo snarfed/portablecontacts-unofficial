@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 """Serves the app.
 
-Includes the descriptive HTML front page and /.well-known/ files, including
-host-meta (XRD) and host-meta.xrds (XRDS-Simple).
+Includes the PortableContacts API, the descriptive HTML front page, and the
+/.well-known/* files, including both XRD host-meta and XRDS-Simple
+host-meta.xrds.
 
 http://portablecontacts.net/draft-spec.html
 
 Note that XRDS-Simple is deprecated and superceded by XRD, but the
 PortableContacts spec requires it specifically, so we support it as well as XRD.
+
+http://docs.oasis-open.org/xri/xrd/v1.0/xrd-1.0.html
+http://hueniverse.com/drafts/draft-xrds-simple-01.html
 """
 
 __author__ = 'Ryan Barrett <portablecontacts-unofficial@ryanb.org>'
@@ -18,18 +22,23 @@ import logging
 import os
 import urlparse
 
+import facebook
+import twitter
+
 from google.appengine.api import app_identity
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 
-# maps app id to expected host in user URIs
-APP_ID_DOMAINS = {
-  'facebook-portablecontacts': 'facebook.com',
-  'twitter-portablecontacts': 'twitter.com',
-  }
 APP_ID = app_identity.get_application_id()
-DOMAIN = APP_ID_DOMAINS[APP_ID]
+
+# maps app id to handler module
+APP_ID_HANDLERS = {
+  'facebook-portablecontacts': facebook.PocoHandler,
+  'twitter-portablecontacts': twitter.PocoHandler,
+  }
+POCO_HANDLER = APP_ID_HANDLERS[APP_ID]
+
 # app_identity.get_default_version_hostname() would be better here, but
 # it doesn't work in dev_appserver since that doesn't set
 # os.environ['DEFAULT_VERSION_HOSTNAME'].
@@ -84,8 +93,8 @@ class HostMetaXrdsHandler(TemplateHandler):
   template_file = 'templates/host-meta.xrds'
 
 
-class UserHandler(webapp.RequestHandler):
-  """Renders and serves /user?uri=...
+class PocoHandler(webapp.RequestHandler):
+  """Serves the PortableContacts API.
   """
   def get(self):
     # parse and validate user uri
@@ -140,7 +149,7 @@ def main():
       [('/', FrontPageHandler),
        ('/.well-known/host-meta', HostMetaXrdHandler),
        ('/.well-known/host-meta.xrds', HostMetaXrdsHandler),
-       ('/user', UserHandler),
+       ('/poco/.*', POCO_HANDLER),
        ],
       debug=appengine_config.DEBUG)
   run_wsgi_app(application)
