@@ -11,7 +11,7 @@ https://developers.facebook.com/blog/post/447/
 https://developers.facebook.com/blog/post/446/
 """
 
-__author__ = ['Ryan Barrett <portablecontacts-unofficial@ryanb.org>']
+__author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import collections
 import datetime

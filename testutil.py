@@ -1,7 +1,7 @@
 """Unit test utilities.
 """
 
-__author__ = ['Ryan Barrett <portablecontacts-unofficial@ryanb.org>']
+__author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
 import pprint

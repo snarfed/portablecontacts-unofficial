@@ -2,7 +2,7 @@
 """Unit tests for facebook.py.
 """
 
-__author__ = ['Ryan Barrett <portablecontacts-unofficial@ryanb.org>']
+__author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import datetime
 import json

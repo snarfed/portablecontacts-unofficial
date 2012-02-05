@@ -2,7 +2,7 @@
 """Runs all unit tests in *_test.py files in the current directory.
 """
 
-__author__ = ['Ryan Barrett <portablecontacts-unofficial@ryanb.org>']
+__author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import glob
 import imp

@@ -14,7 +14,7 @@ http://docs.oasis-open.org/xri/xrd/v1.0/xrd-1.0.html
 http://hueniverse.com/drafts/draft-xrds-simple-01.html
 """
 
-__author__ = 'Ryan Barrett <portablecontacts-unofficial@ryanb.org>'
+__author__ = 'Ryan Barrett <portablecontacts@ryanb.org>'
 
 import appengine_config
 
