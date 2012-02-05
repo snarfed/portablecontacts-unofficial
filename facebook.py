@@ -29,73 +29,6 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 ACCOUNT_DOMAIN = 'facebook.com'
-OAUTH_SCOPES = ','.join((
-    'friends_about_me',
-    'friends_birthday',
-    'friends_education_history',
-    'friends_hometown',
-    'friends_location',
-    'friends_work_history',
-    ))
-
-# facebook oauth url templates for client side flow. can't (easily) use
-# urllib.urlencode() because i want to keep the %(...)s placeholders as is and
-# fill them in later in code.
-GET_AUTH_CODE_URL = '&'.join((
-    ('http://localhost:8000/dialog/oauth/?'
-     if appengine_config.MOCKFACEBOOK else
-     'https://www.facebook.com/dialog/oauth/?'),
-    'scope=%s' % OAUTH_SCOPES,
-    'client_id=%(client_id)s',
-    # redirect_uri here must be the same in the access token request!
-    'redirect_uri=%(host_url)s/facebook/got_auth_code',
-    'response_type=token',
-    'state=%(state)s',
-    ))
-
-
-class FacebookApp(webapp.RequestHandler):
-  """Interacts with Facebook's OAuth and Graph APIs.
-  """
-
-  @classmethod
-  def get_access_token(self):
-    """Gets an access token for the current user.
-
-    Redirects to the current request URL.
-    """
-    url = GET_ACCESS_TOKEN_URL % {
-      'auth_code': auth_code,
-      'client_id': appengine_config.FACEBOOK_APP_ID,
-      'client_secret': appengine_config.FACEBOOK_APP_SECRET,
-      'host_url': handler.request.host_url,
-      }
-    resp = urlfetch.fetch(url, deadline=999)
-    # TODO: error handling. handle permission declines, errors, etc
-    logging.debug('access token response: %s' % resp.content)
-    params = urlparse.parse_qs(resp.content)
-    access_token = params['access_token'][0]
-
-    url = '%s?access_token=%s' % (redirect_uri, access_token)
-    handler.redirect(url)
-
-
-class AddFacebookPage(webapp.RequestHandler):
-  def post(self):
-    FacebookApp.get().get_access_token(self, '/facebook/got_access_token')
-
-
-class GotAuthCode(webapp.RequestHandler):
-  def get(self):
-    FacebookApp.get()._get_access_token_with_auth_code(
-      self, self.request.params['code'], self.request.params['state'])
-
-
-class GotAccessToken(webapp.RequestHandler):
-  def get(self):
-    FacebookPage.create_new(self)
-    self.redirect('/')
-
 
 class PocoHandler(webapp.RequestHandler):
   """Implements the PortableContacts API for Facebook.
@@ -146,7 +79,7 @@ def to_poco(fb):
 
     projects = work.get('projects')
     if 'projects' in work:
-      # TODO: convert these to proper xs:date (ISO 8601)format, e.g.
+      # TODO: convert these to proper xs:date (ISO 8601) format, e.g.
       # 2008-01-23T04:56:22Z
       org['startDate'] = min(p['start_date'] for p in projects)
       org['endDate'] = max(p['end_date'] for p in projects)
@@ -189,8 +122,6 @@ def to_poco(fb):
 
 
 application = webapp.WSGIApplication([
-    # ('/facebook/add', AddFacebookPage),
-    # ('/facebook/got_access_token', GotAccessToken),
     ], debug=appengine_config.DEBUG)
 
 def main():

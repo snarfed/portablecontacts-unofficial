@@ -18,31 +18,6 @@ import testutil
 from google.appengine.ext import webapp
 
 
-class FacebookAppTest(unittest.TestCase):
-
-  def setUp(self):
-    super(FacebookAppTest, self).setUp()
-    appengine_config.FACEBOOK_APP_ID = 'app_id'
-    appengine_config.FACEBOOK_APP_SECRET = 'app_secret'
-
-  def test_get_access_token(self):
-    self.app.get_access_token(self.handler, '/redirect_to')
-    self.assertEqual(302, self.handler.response.status)
-
-    redirect = self.handler.response.headers['Location']
-    parsed = urlparse.urlparse(redirect)
-    self.assertEqual('/dialog/oauth/', parsed.path)
-
-    expected_params = {
-      'scope': [facebook.OAUTH_SCOPES],
-      'client_id': ['app_id'],
-      'redirect_uri': ['http://HOST/facebook/got_access_token'],
-      'response_type': ['code'],
-      'state': ['http://HOST/redirect_to'],
-      }
-    self.assertEqual(expected_params, urlparse.parse_qs(parsed.query))
-
-
 class PocoHandlerTest(testutil.HandlerTest):
 
   def test_to_poco_id_only(self):
