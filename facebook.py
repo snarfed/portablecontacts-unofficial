@@ -24,7 +24,6 @@ import urlparse
 import appengine_config
 
 from google.appengine.api import urlfetch
-from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
@@ -40,12 +39,16 @@ class PocoHandler(webapp.RequestHandler):
 # TODO: follow redirects to get pictures
 def to_poco(fb):
   pc = collections.defaultdict(dict)
-  pc['id'] = fb['id']
-  pc['accounts'] = [{'domain': ACCOUNT_DOMAIN, 'userid': fb['id']}]
+
+  # this should always be true
+  if 'id' in fb:
+    pc['id'] = fb['id']
+    pc['accounts'] = [{'domain': ACCOUNT_DOMAIN, 'userid': fb['id']}]
 
   if 'username' in fb:
     pc['accounts'][0]['username'] = fb['username']
 
+  # this should always be true
   if 'name' in fb:
     pc['displayName'] = fb['name']
     pc['name']['formatted'] = fb['name']
@@ -114,9 +117,6 @@ def to_poco(fb):
         'value': fb['mobile_phone'],
         'type': 'mobile',
         }]
-
-  if '' in fb:
-    pc[''] = fb['']
 
   return dict(pc)
 

@@ -6,11 +6,7 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import datetime
 import json
-import logging
-import mox
 import unittest
-import urllib
-import urlparse
 
 import facebook
 import testutil
@@ -18,7 +14,7 @@ import testutil
 from google.appengine.ext import webapp
 
 
-class PocoHandlerTest(testutil.HandlerTest):
+class FacebookTest(testutil.HandlerTest):
 
   def test_to_poco_id_only(self):
     self.assert_equals(
@@ -49,7 +45,12 @@ class PocoHandlerTest(testutil.HandlerTest):
         'displayName': 'Ryan Barrett',
         'name': {'formatted': 'Ryan Barrett',
                  'givenName': 'Ryan',
-                 'familyName': 'Barrett'},
+                 'familyName': 'Barrett',
+                 },
+        'accounts': [{'domain': 'facebook.com',
+                      'userid': '212038',
+                      'username': 'snarfed.org',
+                      }],
         'birthday': '1980-10-01',
         'addresses': [{
           'streetAddress': '1 Palm Dr.',
@@ -84,10 +85,6 @@ class PocoHandlerTest(testutil.HandlerTest):
           {'name': 'Polytechnic', 'type': 'school'},
           {'name': 'Stanford', 'type': 'school', 'endDate': '2002'},
           ],
-        'accounts': [{'domain': 'facebook.com',
-                      'userid': '212038',
-                      'username': 'snarfed.org',
-                      }],
         },
       facebook.to_poco({
           'id': '212038',
