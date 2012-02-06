@@ -40,7 +40,12 @@ class PocoHandler(webapp.RequestHandler):
 def to_poco(fb):
   pc = collections.defaultdict(dict)
 
-  # this should always be true
+  # facebook friend relationships are always bidirectional
+  pc['connected'] = True
+  pc['relationships'] = ['friend']
+
+
+  # fb should always have 'id'
   if 'id' in fb:
     pc['id'] = fb['id']
     pc['accounts'] = [{'domain': ACCOUNT_DOMAIN, 'userid': fb['id']}]
@@ -48,7 +53,7 @@ def to_poco(fb):
   if 'username' in fb:
     pc['accounts'][0]['username'] = fb['username']
 
-  # this should always be true
+  # fb should always have 'name'
   if 'name' in fb:
     pc['displayName'] = fb['name']
     pc['name']['formatted'] = fb['name']

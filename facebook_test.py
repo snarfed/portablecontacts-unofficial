@@ -17,11 +17,13 @@ from google.appengine.ext import webapp
 class FacebookTest(testutil.HandlerTest):
 
   def test_to_poco_id_only(self):
-    self.assert_equals(
-        {'id': '212038',
-         'accounts': [{'domain': 'facebook.com', 'userid': '212038'}],
-         },
-        facebook.to_poco({'id': '212038'}))
+    self.assert_equals({
+        'id': '212038',
+        'accounts': [{'domain': 'facebook.com', 'userid': '212038'}],
+        'connected': True,
+        'relationships': ['friend'],
+        },
+      facebook.to_poco({'id': '212038'}))
 
   def test_to_poco_minimal(self):
     self.assert_equals({
@@ -32,6 +34,8 @@ class FacebookTest(testutil.HandlerTest):
         'addresses': [{'formatted': 'San Francisco, California',
                        'type': 'home',
                        }],
+        'connected': True,
+        'relationships': ['friend'],
         },
       facebook.to_poco({
         'id': '212038',
@@ -87,6 +91,8 @@ class FacebookTest(testutil.HandlerTest):
           ],
         'utcOffset': '-08:00',
         'updated': '2012-01-06T02:11:04+0000',
+        'connected': True,
+        'relationships': ['friend'],
         },
       facebook.to_poco({
           'id': '212038',
