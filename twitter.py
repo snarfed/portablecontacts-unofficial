@@ -38,10 +38,6 @@ def to_poco(tw):
   pc = collections.defaultdict(dict)
   pc['accounts'] = [{'domain': ACCOUNT_DOMAIN}]
 
-  # # twitter follow relationships are unidirectional
-  # pc['connected'] = False
-  # pc['relationships'] = ['friend']
-
   # tw should always have 'id'
   if 'id' in tw:
     pc['id'] = str(tw['id'])
@@ -64,18 +60,6 @@ def to_poco(tw):
 
   if 'profile_image_url' in tw:
     pc['photos'] = [{'value': tw['profile_image_url'], 'primary': 'true'}]
-
-  # if 'last_name' in tw:
-  #   pc['name']['familyName'] = tw['last_name']
-
-  # if 'birthday' in tw:
-  #   pc['birthday'] = (datetime.datetime.strptime(tw['birthday'], '%m/%d/%Y')
-  #                       .strftime('%Y-%m-%d'))
-  # if 'gender' in tw:
-  #   pc['gender'] = tw['gender']
-
-  # if 'email' in tw:
-  #   pc['emails'] = [{'value': tw['email'], 'type': 'home', 'primary': 'true'}]
 
   if 'url' in tw:
     pc['urls'] = [{'value': tw['url'], 'type': 'home'}]
