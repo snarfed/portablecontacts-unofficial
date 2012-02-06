@@ -73,15 +73,10 @@ class FacebookTest(testutil.HandlerTest):
         'urls': [{'value': 'http://snarfed.org/',
                   'type': 'home',
                   }],
+        # TODO (redirect)
         # 'photos': [{'value': 'http://sample.site.org/photos/12345.jpg',
         #             'type': 'thumbnail'
         #             }],
-      # 'ims': [
-      #   {
-      #     'value': 'plaxodev8',
-      #     'type': 'aim'
-      #   }
-      # ],
         'organizations': [
           {'name': 'Google', 'type': 'job', 'title': 'Software Engineer',
            'startDate': '2002-01', 'endDate': '2010-01'},

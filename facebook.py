@@ -29,6 +29,7 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 ACCOUNT_DOMAIN = 'facebook.com'
 
+
 class PocoHandler(webapp.RequestHandler):
   """Implements the PortableContacts API for Facebook.
   """

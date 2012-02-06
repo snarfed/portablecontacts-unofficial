@@ -4,19 +4,41 @@
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
+import mox
 import pprint
 import re
 import sys
 import unittest
 import urllib
 
+from google.appengine.api import apiproxy_stub_map
+from google.appengine.api import urlfetch
+from google.appengine.ext import testbed
 
-class HandlerTest(unittest.TestCase):
+
+class HandlerTest(mox.MoxTestBase):
   """Base test class for webapp2 request handlers.
+
+  Uses App Engine's testbed to set up API stubs:
+  http://code.google.com/appengine/docs/python/tools/localunittesting.html
 
   Attributes:
     app: WSGIApplication
   """
+
+  class UrlfetchResult(object):
+    """A fake urlfetch.fetch() result object.
+    """
+    def __init__(self, status_code, content):
+      self.status_code = status_code
+      self.content = content
+
+  def setUp(self):
+    super(HandlerTest, self).setUp()
+    self.testbed = testbed.Testbed()
+    self.testbed.activate()
+    self.testbed.init_urlfetch_stub()
+    self.mox.StubOutWithMock(urlfetch, 'fetch')
 
   # def setUp(self, *handler_classes):
   #   """Args:
@@ -64,6 +86,21 @@ class HandlerTest(unittest.TestCase):
   #   if args:
   #     path = '%s?%s' % (path, urllib.urlencode(args))
   #   return self.app.get_response(path)
+
+  def expect_urlfetch(self, expected_url, response):
+    """Stubs out urlfetch.fetch() and sets up an expected call.
+
+    Args:
+      expected_url: string, regex or mox.Comparator
+      response: string
+    """
+    # if isinstance(expected_url, mox.Comparator):
+    #   comparator = expected_url
+    # else:
+    #   comparator = mox.Regex(expected_url)
+
+    urlfetch.fetch(expected_url, deadline=999).AndReturn(
+      self.UrlfetchResult(200, response))
 
   def assert_equals(self, expected, actual):
     """Pinpoints individual element differences in lists and dicts.

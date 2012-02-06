@@ -16,12 +16,61 @@ from google.appengine.ext import webapp
 
 class TwitterTest(testutil.HandlerTest):
 
+  def setUp(self):
+    super(TwitterTest, self).setUp()
+    self.handler = twitter.TwitterHandler()
+
+  def test_get_contacts_username(self):
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/followers/ids.json?screen_name=username',
+      '{"ids": [123, 456]}')
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/users/lookup.json?user_id=123,456',
+      json.dumps([{
+          'id': 123,
+          'screen_name': 'foo',
+          'name': 'Mr. Foo',
+          'location': 'Hometown',
+          'url': 'http://foo.com/',
+          'profile_image_url': 'http://foo.com/pic.jpg',
+          }, {
+          'id': 456,
+          'name': 'Ms. Bar',
+          }]))
+    self.mox.ReplayAll()
+
+    self.assert_equals([{
+          'id': '123',
+          'displayName': 'Mr. Foo',
+          'name': {'formatted': 'Mr. Foo'},
+          'accounts': [{'domain': 'twitter.com',
+                        'userid': '123',
+                        'username': 'foo'}],
+          'addresses': [{'formatted': 'Hometown', 'type': 'home'}],
+          'photos': [{'value': 'http://foo.com/pic.jpg', 'primary': 'true'}],
+          'urls': [{'value': 'http://foo.com/', 'type': 'home'}],
+          }, {
+          'id': '456',
+          'displayName': 'Ms. Bar',
+          'name': {'formatted': 'Ms. Bar'},
+          'accounts': [{'domain': 'twitter.com', 'userid': '456'}],
+          }],
+      self.handler.get_contacts(username='username'))
+
+
+  def test_get_contacts_user_id(self):
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/followers/ids.json?user_id=123',
+      json.dumps({'ids': []}))
+    self.mox.ReplayAll()
+    self.assert_equals([], self.handler.get_contacts(user_id=123))
+
   def test_to_poco_id_only(self):
     self.assert_equals(
         {'id': '139199211',
          'accounts': [{'domain': 'twitter.com', 'userid': '139199211'}],
          },
-        twitter.to_poco({'id': 139199211}))
+        self.handler.to_poco({'id': 139199211}))
 
   def test_to_poco_minimal(self):
     self.assert_equals({
@@ -30,7 +79,7 @@ class TwitterTest(testutil.HandlerTest):
         'name': {'formatted': 'Ryan Barrett'},
         'accounts': [{'domain': 'twitter.com', 'userid': '139199211'}],
         },
-      twitter.to_poco({
+      self.handler.to_poco({
         'id': 139199211,
         'name': 'Ryan Barrett',
         }))
@@ -51,47 +100,13 @@ class TwitterTest(testutil.HandlerTest):
         'photos': [{'value': 'http://a1.twimg.com/profile_images/866165047/ryan_normal.jpg',
                     'primary': 'true',
                     }],
-      #   'birthday': '1980-10-01',
-      #   'addresses': [{
-      #     'streetAddress': '1 Palm Dr.',
-      #     'locality': 'Palo Alto',
-      #     'region': 'California',
-      #     'postalCode': '94301',
-      #     'country': 'United States',
-      #     'type': 'home',
-      #     }],
-      #   'phoneNumbers': [{'value': '1234567890', 'type': 'mobile'}],
-      #   'gender': 'male',
-      #   'emails': [{'value': 'ryan@example.com',
-      #               'type': 'home',
-      #               'primary': 'true',
-      #               }],
         'urls': [{'value': 'http://snarfed.org/',
                   'type': 'home',
                   }],
-      #   # 'photos': [{'value': 'http://sample.site.org/photos/12345.jpg',
-      #   #             'type': 'thumbnail'
-      #   #             }],
-      # # 'ims': [
-      # #   {
-      # #     'value': 'plaxodev8',
-      # #     'type': 'aim'
-      # #   }
-      # # ],
-      #   'organizations': [
-      #     {'name': 'Google', 'type': 'job', 'title': 'Software Engineer',
-      #      'startDate': '2002-01', 'endDate': '2010-01'},
-      #     {'name': 'IBM', 'type': 'job'},
-      #     {'name': 'Polytechnic', 'type': 'school'},
-      #     {'name': 'Stanford', 'type': 'school', 'endDate': '2002'},
-      #     ],
         'utcOffset': '-08:00',
-        # 'updated': '2012-01-06T02:11:04+0000',
-        # 'connected': True,
-        # 'relationships': ['friend'],
         'note': 'something about me',
         },
-      twitter.to_poco({
+      self.handler.to_poco({
           'description': 'something about me',
           'id': 139199211,
           'id_str': '139199211',
