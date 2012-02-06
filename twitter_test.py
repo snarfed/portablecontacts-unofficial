@@ -8,6 +8,8 @@ import datetime
 import json
 import unittest
 
+from webob import exc
+
 import testutil
 import twitter
 
@@ -74,6 +76,12 @@ class TwitterTest(testutil.HandlerTest):
 
     self.handler.request.headers['Authentication'] = 'insert oauth here'
     self.assert_equals([], self.handler.get_contacts(user_id=123))
+
+  def test_get_contacts_error_both_user_id_and_username(self):
+    self.assertRaises(exc.HTTPBadRequest, self.handler.get_contacts)
+
+  def test_get_contacts_error_no_user_id_or_username(self):
+    self.assertRaises(exc.HTTPBadRequest, self.handler.get_contacts)
 
   def test_to_poco_id_only(self):
     self.assert_equals(

@@ -10,6 +10,8 @@ pprint(json.loads(urllib.urlopen(
 import json, urllib
 pprint(json.loads(urllib.urlopen(
   'https://api.twitter.com/1/followers/ids.json?screen_name=snarfed_org').read()))
+
+STATE: poco.handler.urlfetch
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
@@ -20,6 +22,8 @@ import json
 import logging
 import re
 import urllib
+
+from webob import exc
 
 import appengine_config
 import poco
@@ -49,36 +53,25 @@ class TwitterHandler(poco.PocoHandler):
       urlfetch_kwargs['headers'] = {
         'Authentication': self.request.headers['Authentication']}
 
-    assert (user_id is not None) ^ (username is not None)  # xor
+    if not user_id and not username:
+      raise exc.HTTPBadRequest('user_id or username are required for Twitter.')
+    elif user_id and username:
+      raise exc.HTTPBadRequest('Cannot specify both user_id and username.')
+
     if user_id:
       param = '?user_id=%d' % user_id
     else:
       param = '?screen_name=%s' % urllib.quote_plus(username)
 
-    resp = urlfetch.fetch(API_FOLLOWERS_URL + param, deadline=999,
-                          **urlfetch_kwargs)
-    # TODO: refactor
-    if resp.status_code != 200:
-      # return the Twitter response to the client
-      self.response.set_status(resp.status_code)
-      self.response.headers.update(resp.headers)
-      self.response.out.write(resp.content)
-
     # TODO: handle cursors and repeat to get all users
-    ids = json.loads(resp.content)['ids']
+    resp = self.urlfetch(API_FOLLOWERS_URL + param, **urlfetch_kwargs)
+    ids = json.loads(resp)['ids']
     if not ids:
       return []
 
     param = '?user_id=%s' % ','.join(str(id) for id in ids)
-    resp = urlfetch.fetch(API_USERS_URL + param, deadline=999,
-                          **urlfetch_kwargs)
-    if resp.status_code != 200:
-      # return the Twitter response to the client
-      self.response.set_status(resp.status_code)
-      self.response.headers.update(resp.headers)
-      self.response.out.write(resp.content)
-
-    return [self.to_poco(user) for user in json.loads(resp.content)]
+    resp = self.urlfetch(API_USERS_URL + param, **urlfetch_kwargs)
+    return [self.to_poco(user) for user in json.loads(resp)]
 
   def to_poco(self, tw):
     """Converts a Twitter user to a PoCo user.

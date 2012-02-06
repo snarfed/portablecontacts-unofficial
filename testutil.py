@@ -31,9 +31,10 @@ class HandlerTest(mox.MoxTestBase):
   class UrlfetchResult(object):
     """A fake urlfetch.fetch() result object.
     """
-    def __init__(self, status_code, content):
+    def __init__(self, status_code, content, headers={}):
       self.status_code = status_code
       self.content = content
+      self.headers = headers
 
   def setUp(self):
     super(HandlerTest, self).setUp()
@@ -90,12 +91,13 @@ class HandlerTest(mox.MoxTestBase):
   #     path = '%s?%s' % (path, urllib.urlencode(args))
   #   return self.app.get_response(path)
 
-  def expect_urlfetch(self, expected_url, response, **kwargs):
+  def expect_urlfetch(self, expected_url, response, status=200, **kwargs):
     """Stubs out urlfetch.fetch() and sets up an expected call.
 
     Args:
       expected_url: string, regex or mox.Comparator
       response: string
+      status: int, HTTP response code
       kwargs: passed to urlfetch.fetch()
     """
     # if isinstance(expected_url, mox.Comparator):
@@ -104,7 +106,7 @@ class HandlerTest(mox.MoxTestBase):
     #   comparator = mox.Regex(expected_url)
 
     urlfetch.fetch(expected_url, deadline=999, **kwargs).AndReturn(
-      self.UrlfetchResult(200, response))
+      self.UrlfetchResult(status, response))
 
   def assert_equals(self, expected, actual):
     """Pinpoints individual element differences in lists and dicts.

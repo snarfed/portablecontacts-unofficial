@@ -7,8 +7,11 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 import json
 import logging
 
+from webob import exc
+
 import appengine_config
 
+from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
@@ -47,3 +50,27 @@ class PocoHandler(webapp.RequestHandler):
       username: str
     """
     raise NotImplementedError()
+
+  def urlfetch(self, url, **kwargs):
+    """Wraps urlfetch. Passes error responses through to the client.
+
+    ...by raising HTTPException.
+
+    Args:
+      url: str
+      kwargs: passed through to urlfetch.fetch()
+
+    Returns:
+      the HTTP response body
+    """
+    resp = urlfetch.fetch(url, deadline=999, **kwargs)
+
+    if resp.status_code == 200:
+      return resp.content
+    else:
+      # can't update() because webapp.Response.headers isn't a dict and doesn't
+      # have it
+      for key, val in resp.headers.items():
+        self.response.headers[key] = val
+      self.response.out.write(resp.content)
+      raise exc.status_map.get(resp.status_code)(resp.content)
