@@ -8,57 +8,51 @@ import json
 import mox
 import unittest
 
+import poco
 import testutil
 
 from google.appengine.ext import webapp
 
 
-class PocoHandlerTest(testutil.HandlerTest):
-  pass
-  # def test_get_contacts_username(self):
-  #   self.expect_urlfetch(
-  #     'https://api.twitter.com/1/followers/ids.json?screen_name=username',
-  #     '{"ids": [123, 456]}')
-  #   self.expect_urlfetch(
-  #     'https://api.twitter.com/1/users/lookup.json?user_id=123,456',
-  #     json.dumps([{
-  #         'id': 123,
-  #         'screen_name': 'foo',
-  #         'name': 'Mr. Foo',
-  #         'location': 'Hometown',
-  #         'url': 'http://foo.com/',
-  #         'profile_image_url': 'http://foo.com/pic.jpg',
-  #         }, {
-  #         'id': 456,
-  #         'name': 'Ms. Bar',
-  #         }]))
-  #   self.expect_urlfetch(
-  #     'https://api.twitter.com/1/users/lookup.json?user_id=456',
-  #     '{"ids": [123, 456]}')
-  #   self.mox.ReplayAll()
+class FakeHandler(poco.PocoHandler):
+  contacts = None
 
-  #   self.assert_equals({
-  #       'startIndex': 0,
-  #       'itemsPerPage': 10,
-  #       'totalResults': 2,
-  #       'entry': [{
-  #           'id': '123',
-  #           'displayName': 'Mr. Foo',
-  #           'name': {'formatted': 'Mr. Foo'},
-  #           'accounts': [{'domain': 'twitter.com',
-  #                         'userid': '123',
-  #                         'username': 'foo'}],
-  #           'addresses': [{'formatted': 'Hometown', 'type': 'home'}],
-  #           'photos': [{'value': 'http://foo.com/pic.jpg', 'primary': 'true'}],
-  #           'urls': [{'value': 'http://foo.com/', 'type': 'home'}],
-  #           }, {
-  #           'id': '123',
-  #           'displayName': 'Ms. Bar',
-  #           'name': {'formatted': 'Ms. Bar'},
-  #           'accounts': [{'domain': 'twitter.com', 'userid': '456'}],
-  #           }],
-  #       },
-  #     self.handler.get_contacts(username='username'))
+  def get_contacts(self, user_id=None, username=None):
+    return self.contacts
+
+
+class PocoHandlerTest(testutil.HandlerTest):
+
+  def setUp(self):
+    super(PocoHandlerTest, self).setUp()
+    self.handler = FakeHandler()
+    self.handler.initialize(self.request, self.response)
+
+  def test_get_no_contacts(self):
+    self.handler.contacts = []
+    self.handler.get()
+
+    self.assertEquals(200, self.response.status)
+    self.assert_equals({
+        'startIndex': 0,
+        'itemsPerPage': 10,
+        'totalResults': 0,
+        'entry': self.handler.contacts,
+        },
+      json.loads(self.response.out.getvalue()))
+
+  def test_get_some_contacts(self):
+    self.handler.contacts = [{'id': 123}, {'id': 456, 'displayName': 'Ryan'}]
+    self.handler.get()
+
+    self.assertEquals(200, self.response.status)
+    self.assert_equals({
+        'startIndex': 0,
+        'itemsPerPage': 10,
+        'totalResults': 2,
+        'entry': self.handler.contacts,
+        },
+      json.loads(self.response.out.getvalue()))
 
 
   # def test_get_contacts_user_id(self):

@@ -20,9 +20,18 @@ class PocoHandler(webapp.RequestHandler):
 
   TODO: implement paging:
   file:///home/ryanb/docs/portablecontacts_spec.html#anchor14
-
-  Attributes:
   """
+
+  def get(self):
+    contacts = self.get_contacts()
+
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.out.write(json.dumps({
+        'startIndex': 0,
+        'itemsPerPage': 10,
+        'totalResults': len(contacts),
+        'entry': contacts,
+        }))
 
   def get_contacts(self, user_id=None, username=None):
     """Return a (Python) list of PoCo contacts to be JSON-encoded.
