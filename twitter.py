@@ -1,11 +1,11 @@
 #!/usr/bin/python
 """Twitter handler and schema mapping code.
 
-Python code to pretty-print JSON responses from Twitter Search API:
+Python code to pretty-print JSON response from Twitter REST API:
 
 import json, urllib
-pprint.pprint(json.loads(urllib.urlopen(
-  'http://search.twitter.com/search.json?q=snarfed.org+filter%3Alinks&include_entities=true&result_type=recent&rpp=100').read()))
+pprint(json.loads(urllib.urlopen(
+  'https://api.twitter.com/1/users/lookup.json?screen_name=snarfed_org').read()))
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
@@ -14,6 +14,7 @@ import collections
 import datetime
 import json
 import logging
+import re
 import urllib
 
 import appengine_config
@@ -37,7 +38,11 @@ def to_poco(tw):
   pc = collections.defaultdict(dict)
   pc['accounts'] = [{'domain': ACCOUNT_DOMAIN}]
 
-  # this should always be true
+  # # twitter follow relationships are unidirectional
+  # pc['connected'] = False
+  # pc['relationships'] = ['friend']
+
+  # tw should always have 'id'
   if 'id' in tw:
     pc['id'] = str(tw['id'])
     pc['accounts'][0]['userid'] = str(tw['id'])
@@ -45,13 +50,20 @@ def to_poco(tw):
   if 'screen_name' in tw:
     pc['accounts'][0]['username'] = tw['screen_name']
 
-  # this should always be true
+  # tw should always have 'name'
   if 'name' in tw:
     pc['displayName'] = tw['name']
     pc['name']['formatted'] = tw['name']
 
-  # if 'first_name' in tw:
-  #   pc['name']['givenName'] = tw['first_name']
+  if 'created_at' in tw:
+    # created_at is formatted like 'Sun, 01 Jan 11:44:57 +0000 2012'.
+    # remove the time zone, then parse the string, then reformat as ISO 8601.
+    created_at = re.sub(' [+-][0-9]{4} ', ' ', tw['created_at'])
+    created_at = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S %Y')
+    pc['published'] = created_at.isoformat()
+
+  if 'profile_image_url' in tw:
+    pc['photos'] = [{'value': tw['profile_image_url'], 'primary': 'true'}]
 
   # if 'last_name' in tw:
   #   pc['name']['familyName'] = tw['last_name']
@@ -65,33 +77,8 @@ def to_poco(tw):
   # if 'email' in tw:
   #   pc['emails'] = [{'value': tw['email'], 'type': 'home', 'primary': 'true'}]
 
-  # if 'website' in tw:
-  #   pc['urls'] = [{'value': tw['website'], 'type': 'home'}]
-
-  # for work in tw.get('work', []):
-  #   org = {}
-  #   pc.setdefault('organizations', []).append(org)
-  #   if 'employer' in work:
-  #     org['name'] = work['employer'].get('name')
-  #   org['type'] = 'job'
-  #   if 'position' in work:
-  #     org['title'] = work['position']
-
-  #   projects = work.get('projects')
-  #   if 'projects' in work:
-  #     # TODO: convert these to proper xs:date (ISO 8601) format, e.g.
-  #     # 2008-01-23T04:56:22Z
-  #     org['startDate'] = min(p['start_date'] for p in projects)
-  #     org['endDate'] = max(p['end_date'] for p in projects)
-
-  # for school in tw.get('education', []):
-  #   org = {}
-  #   pc.setdefault('organizations', []).append(org)
-  #   if 'school' in school:
-  #     org['name'] = school['school'].get('name')
-  #   org['type'] = 'school'
-  #   if 'year' in school:
-  #     org['endDate'] = school['year']
+  if 'url' in tw:
+    pc['urls'] = [{'value': tw['url'], 'type': 'home'}]
 
   if 'location' in tw:
     pc['addresses'] = [{
@@ -99,11 +86,16 @@ def to_poco(tw):
         'type': 'home',
         }]
 
-  # if 'mobile_phone' in tw:
-  #   pc['phoneNumbers'] = [{
-  #       'value': tw['mobile_phone'],
-  #       'type': 'mobile',
-  #       }]
+  if 'time_zone' in tw:
+    # twitter's utc_offset field is seconds, oddly, not hours.
+    pc['utcOffset'] =  '%+03d:00' % (tw['utc_offset'] / 60 / 60)
+
+    # also note that twitter's time_zone field provides the user's human-readable
+    # time zone, e.g. 'Pacific Time (US & Canada)'. i'd need to include tzdb to
+    # parse that, though, and i don't need to since utc_offset works fine.
+
+  if 'description' in tw:
+    pc['note'] = tw['description']
 
   return dict(pc)
 

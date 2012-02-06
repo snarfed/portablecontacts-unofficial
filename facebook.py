@@ -44,7 +44,6 @@ def to_poco(fb):
   pc['connected'] = True
   pc['relationships'] = ['friend']
 
-
   # fb should always have 'id'
   if 'id' in fb:
     pc['id'] = fb['id']
