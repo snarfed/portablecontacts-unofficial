@@ -33,18 +33,11 @@ from google.appengine.ext.webapp import template
 APP_ID = app_identity.get_application_id()
 
 # maps app id to handler module
-APP_ID_HANDLERS = {
-  'facebook-portablecontacts': facebook.PocoHandler,
-  'twitter-portablecontacts': twitter.PocoHandler,
+APP_ID_MODULES = {
+  'facebook-portablecontacts': facebook,
+  'twitter-portablecontacts': twitter,
   }
-POCO_HANDLER = APP_ID_HANDLERS[APP_ID]
-
-# maps app id to source domain
-APP_ID_DOMAINS = {
-  'facebook-portablecontacts': 'facebook.com',
-  'twitter-portablecontacts': 'twitter.com',
-  }
-DOMAIN = APP_ID_DOMAINS[APP_ID]
+POCO_MODULE = APP_ID_MODULES[APP_ID]
 
 # app_identity.get_default_version_hostname() would be better here, but
 # it doesn't work in dev_appserver since that doesn't set
@@ -57,7 +50,7 @@ BASE_HEADERS = {
   'X-XRDS-Location': 'https://%s/.well-known/host-meta.xrds' % HOST,
   }
 BASE_TEMPLATE_VARS = {
-  'domain': DOMAIN,
+  'domain': POCO_MODULE.Handler.SOURCE_DOMAIN,
   'host': HOST,
   }
 
@@ -119,10 +112,10 @@ class PocoHandler(webapp.RequestHandler):
     except ValueError, AssertionError:
       raise webapp.exc.HTTPBadRequest('Bad user URI: %s' % uri)
 
-    if host not in (HOST, DOMAIN):
+    if host not in (HOST, POCO_MODULE.Handler.SOURCE_DOMAIN):
       raise webapp.exc.HTTPBadRequest(
         'User URI %s has unsupported host %s; expected %s or %s.' %
-        (uri, host, HOST, DOMAIN))
+        (uri, host, HOST, POCO_MODULE.Handler.SOURCE_DOMAIN))
 
     # render template
     vars = {'uri': uri}
@@ -156,7 +149,7 @@ def main():
       [('/', FrontPageHandler),
        ('/.well-known/host-meta', HostMetaXrdHandler),
        ('/.well-known/host-meta.xrds', HostMetaXrdsHandler),
-       ('/poco/.*', POCO_HANDLER),
+       ('/poco/.*', POCO_MODULE.Handler),
        ],
       debug=appengine_config.DEBUG)
   run_wsgi_app(application)

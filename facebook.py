@@ -27,13 +27,11 @@ from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-ACCOUNT_DOMAIN = 'facebook.com'
 
-
-class PocoHandler(webapp.RequestHandler):
+class Handler(webapp.RequestHandler):
   """Implements the PortableContacts API for Facebook.
   """
-  pass
+  SOURCE_DOMAIN = 'facebook.com'
 
 
 # schema mapping
@@ -48,7 +46,7 @@ def to_poco(fb):
   # fb should always have 'id'
   if 'id' in fb:
     pc['id'] = fb['id']
-    pc['accounts'] = [{'domain': ACCOUNT_DOMAIN, 'userid': fb['id']}]
+    pc['accounts'] = [{'domain': self.SOURCE_DOMAIN, 'userid': fb['id']}]
 
   if 'username' in fb:
     pc['accounts'][0]['username'] = fb['username']

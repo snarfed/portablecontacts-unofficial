@@ -20,7 +20,7 @@ class TwitterTest(testutil.HandlerTest):
 
   def setUp(self):
     super(TwitterTest, self).setUp()
-    self.handler = twitter.TwitterHandler()
+    self.handler = twitter.Handler()
     self.handler.initialize(self.request, self.response)
 
   def test_get_contacts_username(self):

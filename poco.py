@@ -1,5 +1,7 @@
 #!/usr/bin/python
 """PocoHandler base class.
+
+TODO: xml
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']

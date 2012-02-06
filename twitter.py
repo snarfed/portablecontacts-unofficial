@@ -3,6 +3,9 @@
 
 Python code to pretty-print JSON response from Twitter REST API:
 
+STATE: use /account/verify_credentials to get current user.
+https://dev.twitter.com/docs/api/1/get/account/verify_credentials
+
 import json, urllib
 pprint(json.loads(urllib.urlopen(
   'https://api.twitter.com/1/users/lookup.json?screen_name=snarfed_org').read()))
@@ -10,8 +13,6 @@ pprint(json.loads(urllib.urlopen(
 import json, urllib
 pprint(json.loads(urllib.urlopen(
   'https://api.twitter.com/1/followers/ids.json?screen_name=snarfed_org').read()))
-
-STATE: poco.handler.urlfetch
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
@@ -32,14 +33,15 @@ from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-ACCOUNT_DOMAIN = 'twitter.com'
 API_FOLLOWERS_URL = 'https://api.twitter.com/1/followers/ids.json'
 API_USERS_URL = 'https://api.twitter.com/1/users/lookup.json'
 
 
-class TwitterHandler(poco.PocoHandler):
+class Handler(poco.PocoHandler):
   """Implements the PortableContacts API for Twitter.
   """
+
+  SOURCE_DOMAIN = 'twitter.com'
 
   def get_contacts(self, user_id=None, username=None):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
@@ -80,7 +82,7 @@ class TwitterHandler(poco.PocoHandler):
       tw: dict, a decoded JSON Twitter user
     """
     pc = collections.defaultdict(dict)
-    pc['accounts'] = [{'domain': ACCOUNT_DOMAIN}]
+    pc['accounts'] = [{'domain': self.SOURCE_DOMAIN}]
   
     # tw should always have 'id'
     if 'id' in tw:

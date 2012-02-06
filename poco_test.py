@@ -70,18 +70,3 @@ class PocoHandlerTest(testutil.HandlerTest):
     except exc.HTTPException, e:
       self.assertEquals(408, e.status_int)
       self.assertEquals('my error', self.response.out.getvalue())
-
-
-  # def test_get_contacts_user_id(self):
-  #   self.expect_urlfetch(
-  #     'https://api.twitter.com/1/followers/ids.json?user_id=123',
-  #     json.dumps({'ids': []}))
-  #   self.mox.ReplayAll()
-
-  #   self.assert_equals({
-  #       'startIndex': 0,
-  #       'itemsPerPage': 10,
-  #       'totalResults': 2,
-  #       'entry': [],
-  #       },
-  #   self.handler.get_contacts(user_id=123))
