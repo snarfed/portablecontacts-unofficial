@@ -23,9 +23,12 @@ class TwitterTest(testutil.HandlerTest):
     self.handler = twitter.Handler()
     self.handler.initialize(self.request, self.response)
 
-  def test_get_contacts_username(self):
+  def test_get_contacts(self):
     self.expect_urlfetch(
-      'https://api.twitter.com/1/followers/ids.json?screen_name=username',
+      'https://api.twitter.com/1/account/verify_credentials.json',
+      '{"id": 9}')
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/friends/ids.json?user_id=9',
       '{"ids": [123, 456]}')
     self.expect_urlfetch(
       'https://api.twitter.com/1/users/lookup.json?user_id=123,456',
@@ -58,30 +61,35 @@ class TwitterTest(testutil.HandlerTest):
           'name': {'formatted': 'Ms. Bar'},
           'accounts': [{'domain': 'twitter.com', 'userid': '456'}],
           }],
-      self.handler.get_contacts(username='username'))
+      self.handler.get_contacts())
 
   def test_get_contacts_user_id(self):
     self.expect_urlfetch(
-      'https://api.twitter.com/1/followers/ids.json?user_id=123',
-      json.dumps({'ids': []}))
+      'https://api.twitter.com/1/users/lookup.json?user_id=123',
+      '[]')
     self.mox.ReplayAll()
     self.assert_equals([], self.handler.get_contacts(user_id=123))
 
   def test_get_contacts_passes_through_auth_header(self):
     self.expect_urlfetch(
-      'https://api.twitter.com/1/followers/ids.json?user_id=123',
-      json.dumps({'ids': []}),
+      'https://api.twitter.com/1/account/verify_credentials.json',
+      '{"id": 9}',
+      headers={'Authentication': 'insert oauth here'})
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/friends/ids.json?user_id=9',
+      '{"ids": []}',
       headers={'Authentication': 'insert oauth here'})
     self.mox.ReplayAll()
 
     self.handler.request.headers['Authentication'] = 'insert oauth here'
-    self.assert_equals([], self.handler.get_contacts(user_id=123))
+    self.assert_equals([], self.handler.get_contacts())
 
-  def test_get_contacts_error_both_user_id_and_username(self):
-    self.assertRaises(exc.HTTPBadRequest, self.handler.get_contacts)
-
-  def test_get_contacts_error_no_user_id_or_username(self):
-    self.assertRaises(exc.HTTPBadRequest, self.handler.get_contacts)
+  def test_get_current_user_id(self):
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/account/verify_credentials.json',
+      '{"id": 9}')
+    self.mox.ReplayAll()
+    self.assert_equals(9, self.handler.get_current_user_id())
 
   def test_to_poco_id_only(self):
     self.assert_equals(

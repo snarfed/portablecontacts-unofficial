@@ -3,9 +3,6 @@
 
 Python code to pretty-print JSON response from Twitter REST API:
 
-STATE: use /account/verify_credentials to get current user.
-https://dev.twitter.com/docs/api/1/get/account/verify_credentials
-
 import json, urllib
 pprint(json.loads(urllib.urlopen(
   'https://api.twitter.com/1/users/lookup.json?screen_name=snarfed_org').read()))
@@ -33,8 +30,9 @@ from google.appengine.api import urlfetch
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-API_FOLLOWERS_URL = 'https://api.twitter.com/1/followers/ids.json'
-API_USERS_URL = 'https://api.twitter.com/1/users/lookup.json'
+API_FRIENDS_URL = 'https://api.twitter.com/1/friends/ids.json?user_id=%d'
+API_USERS_URL = 'https://api.twitter.com/1/users/lookup.json?user_id=%s'
+API_ACCOUNT_URL = 'https://api.twitter.com/1/account/verify_credentials.json'
 
 
 class Handler(poco.PocoHandler):
@@ -43,37 +41,42 @@ class Handler(poco.PocoHandler):
 
   SOURCE_DOMAIN = 'twitter.com'
 
-  def get_contacts(self, user_id=None, username=None):
+  def get_contacts(self, user_id=None):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
 
-    Twitter doesn't infer the current user from OAuth credentials, so user_id or
-    username should be provided. Also, the OAuth 'Authentication' header must
-    be provided if the user is protected.
+    The OAuth 'Authentication' header must be provided if the current user is
+    protected, or to receive any protected friends in the returned contacts.
+
+    Args:
+      user_id: integer or string. if provided, only this user will be returned.
     """
-    urlfetch_kwargs = {}
-    if 'Authentication' in self.request.headers:
-      urlfetch_kwargs['headers'] = {
-        'Authentication': self.request.headers['Authentication']}
-
-    if not user_id and not username:
-      raise exc.HTTPBadRequest('user_id or username are required for Twitter.')
-    elif user_id and username:
-      raise exc.HTTPBadRequest('Cannot specify both user_id and username.')
-
-    if user_id:
-      param = '?user_id=%d' % user_id
-    else:
-      param = '?screen_name=%s' % urllib.quote_plus(username)
-
     # TODO: handle cursors and repeat to get all users
-    resp = self.urlfetch(API_FOLLOWERS_URL + param, **urlfetch_kwargs)
-    ids = json.loads(resp)['ids']
+    if user_id is not None:
+      ids = [user_id]
+    else:
+      resp = self.urlfetch(API_FRIENDS_URL % self.get_current_user_id())
+      ids = json.loads(resp)['ids']
+
     if not ids:
       return []
 
-    param = '?user_id=%s' % ','.join(str(id) for id in ids)
-    resp = self.urlfetch(API_USERS_URL + param, **urlfetch_kwargs)
+    ids_str = ','.join(str(id) for id in ids)
+    resp = self.urlfetch(API_USERS_URL % ids_str)
     return [self.to_poco(user) for user in json.loads(resp)]
+
+  def get_current_user_id(self):
+    """Returns the currently authenticated user's id (an integer).
+    """
+    resp = self.urlfetch(API_ACCOUNT_URL)
+    return json.loads(resp)['id']
+
+  def urlfetch(self, *args, **kwargs):
+    """Wraps PocoHandler.urlfetch and passes through the Authentication header.
+    """
+    if 'Authentication' in self.request.headers:
+      kwargs['headers'] = {'Authentication':
+                             self.request.headers['Authentication']}
+    return super(Handler, self).urlfetch(*args, **kwargs)
 
   def to_poco(self, tw):
     """Converts a Twitter user to a PoCo user.

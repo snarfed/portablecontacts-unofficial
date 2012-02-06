@@ -18,9 +18,13 @@ from google.appengine.ext import webapp
 
 class FakeHandler(poco.PocoHandler):
   contacts = None
+  user_id = 0
 
-  def get_contacts(self, user_id=None, username=None):
+  def get_contacts(self, user_id=None):
     return self.contacts
+
+  def get_current_user_id(self):
+    return self.user
 
 
 class PocoHandlerTest(testutil.HandlerTest):
