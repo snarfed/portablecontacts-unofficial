@@ -10,10 +10,12 @@ import re
 import sys
 import unittest
 import urllib
+import wsgiref
 
 from google.appengine.api import apiproxy_stub_map
 from google.appengine.api import urlfetch
 from google.appengine.ext import testbed
+from google.appengine.ext import webapp
 
 
 class HandlerTest(mox.MoxTestBase):
@@ -40,11 +42,12 @@ class HandlerTest(mox.MoxTestBase):
     self.testbed.init_urlfetch_stub()
     self.mox.StubOutWithMock(urlfetch, 'fetch')
 
-  # def setUp(self, *handler_classes):
-  #   """Args:
-  #   handler_classes: RequestHandlers to initialize
-  #   """
-  #   super(HandlerTest, self).setUp()
+    self.environ = {}
+    wsgiref.util.setup_testing_defaults(self.environ)
+    self.environ['HTTP_HOST'] = 'HOST'
+    self.request = webapp.Request(self.environ)
+    self.response = webapp.Response()
+
   #   self.app = server.application()
 
   # def expect(self, path, expected, args=None, expected_status=200):
@@ -87,19 +90,20 @@ class HandlerTest(mox.MoxTestBase):
   #     path = '%s?%s' % (path, urllib.urlencode(args))
   #   return self.app.get_response(path)
 
-  def expect_urlfetch(self, expected_url, response):
+  def expect_urlfetch(self, expected_url, response, **kwargs):
     """Stubs out urlfetch.fetch() and sets up an expected call.
 
     Args:
       expected_url: string, regex or mox.Comparator
       response: string
+      kwargs: passed to urlfetch.fetch()
     """
     # if isinstance(expected_url, mox.Comparator):
     #   comparator = expected_url
     # else:
     #   comparator = mox.Regex(expected_url)
 
-    urlfetch.fetch(expected_url, deadline=999).AndReturn(
+    urlfetch.fetch(expected_url, deadline=999, **kwargs).AndReturn(
       self.UrlfetchResult(200, response))
 
   def assert_equals(self, expected, actual):

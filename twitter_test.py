@@ -19,6 +19,7 @@ class TwitterTest(testutil.HandlerTest):
   def setUp(self):
     super(TwitterTest, self).setUp()
     self.handler = twitter.TwitterHandler()
+    self.handler.initialize(self.request, self.response)
 
   def test_get_contacts_username(self):
     self.expect_urlfetch(
@@ -57,12 +58,21 @@ class TwitterTest(testutil.HandlerTest):
           }],
       self.handler.get_contacts(username='username'))
 
-
   def test_get_contacts_user_id(self):
     self.expect_urlfetch(
       'https://api.twitter.com/1/followers/ids.json?user_id=123',
       json.dumps({'ids': []}))
     self.mox.ReplayAll()
+    self.assert_equals([], self.handler.get_contacts(user_id=123))
+
+  def test_get_contacts_passes_through_auth_header(self):
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/followers/ids.json?user_id=123',
+      json.dumps({'ids': []}),
+      headers={'Authentication': 'insert oauth here'})
+    self.mox.ReplayAll()
+
+    self.handler.request.headers['Authentication'] = 'insert oauth here'
     self.assert_equals([], self.handler.get_contacts(user_id=123))
 
   def test_to_poco_id_only(self):

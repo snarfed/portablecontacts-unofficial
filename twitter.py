@@ -44,13 +44,19 @@ class TwitterHandler(poco.PocoHandler):
     username should be provided. Also, the OAuth 'Authentication' header must
     be provided if the user is protected.
     """
+    urlfetch_kwargs = {}
+    if 'Authentication' in self.request.headers:
+      urlfetch_kwargs['headers'] = {
+        'Authentication': self.request.headers['Authentication']}
+
     assert (user_id is not None) ^ (username is not None)  # xor
     if user_id:
       param = '?user_id=%d' % user_id
     else:
       param = '?screen_name=%s' % urllib.quote_plus(username)
 
-    resp = urlfetch.fetch(API_FOLLOWERS_URL + param, deadline=999)
+    resp = urlfetch.fetch(API_FOLLOWERS_URL + param, deadline=999,
+                          **urlfetch_kwargs)
     # TODO: refactor
     if resp.status_code != 200:
       # return the Twitter response to the client
@@ -64,7 +70,8 @@ class TwitterHandler(poco.PocoHandler):
       return []
 
     param = '?user_id=%s' % ','.join(str(id) for id in ids)
-    resp = urlfetch.fetch(API_USERS_URL + param, deadline=999)
+    resp = urlfetch.fetch(API_USERS_URL + param, deadline=999,
+                          **urlfetch_kwargs)
     if resp.status_code != 200:
       # return the Twitter response to the client
       self.response.set_status(resp.status_code)
