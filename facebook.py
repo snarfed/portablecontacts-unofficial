@@ -118,6 +118,12 @@ def to_poco(fb):
         'type': 'mobile',
         }]
 
+  if 'timezone' in fb:
+    pc['utcOffset'] = '%+03d:00' % fb['timezone']
+
+  if 'updated_time' in fb:
+    pc['updated'] = fb['updated_time']
+
   return dict(pc)
 
 

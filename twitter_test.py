@@ -87,10 +87,6 @@ class TwitterTest(testutil.HandlerTest):
       #     ],
         },
       twitter.to_poco({
-            # 'contributors_enabled': False,
-            # 'created_at': 'Sat May 01 21:42:43 +0000 2010',
-            # 'default_profile': True,
-            # 'default_profile_image': False,
             # 'description': '',
             # 'favourites_count': 0,
             # 'follow_request_sent': None,

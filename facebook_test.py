@@ -85,6 +85,8 @@ class FacebookTest(testutil.HandlerTest):
           {'name': 'Polytechnic', 'type': 'school'},
           {'name': 'Stanford', 'type': 'school', 'endDate': '2002'},
           ],
+        'utcOffset': '-08:00',
+        'updated': '2012-01-06T02:11:04+0000',
         },
       facebook.to_poco({
           'id': '212038',
@@ -123,7 +125,7 @@ class FacebookTest(testutil.HandlerTest):
               }, {
               'employer': {'name': 'IBM'},
               }],
-           'education': [{
+          'education': [{
               'school': {'id': '7590844925','name': 'Polytechnic'},
               'type': 'High School'
               }, {
@@ -131,7 +133,9 @@ class FacebookTest(testutil.HandlerTest):
               'year': '2002',
               'type': 'Graduate School'
               }],
-           'gender': 'male',
-           'email': 'ryan@example.com',
-           'website': 'http://snarfed.org/',
+          'gender': 'male',
+          'email': 'ryan@example.com',
+          'website': 'http://snarfed.org/',
+          'timezone': -8,
+          'updated_time': '2012-01-06T02:11:04+0000',
           }))
