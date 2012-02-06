@@ -93,6 +93,7 @@ class FacebookTest(testutil.HandlerTest):
         'updated': '2012-01-06T02:11:04+0000',
         'connected': True,
         'relationships': ['friend'],
+        'note': 'something about me',
         },
       facebook.to_poco({
           'id': '212038',
@@ -144,4 +145,5 @@ class FacebookTest(testutil.HandlerTest):
           'website': 'http://snarfed.org/',
           'timezone': -8,
           'updated_time': '2012-01-06T02:11:04+0000',
+          'bio': 'something about me',
           }))

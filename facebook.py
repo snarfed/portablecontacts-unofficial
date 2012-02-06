@@ -129,6 +129,9 @@ def to_poco(fb):
   if 'updated_time' in fb:
     pc['updated'] = fb['updated_time']
 
+  if 'bio' in fb:
+    pc['note'] = fb['bio']
+
   return dict(pc)
 
 
