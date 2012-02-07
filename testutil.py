@@ -21,6 +21,7 @@ class HandlerTest(mox.MoxTestBase):
   http://code.google.com/appengine/docs/python/tools/localunittesting.html
 
   Attributes:
+    application: WSGIApplication
     handler: webapp.RequestHandler
   """
 
@@ -32,8 +33,9 @@ class HandlerTest(mox.MoxTestBase):
       self.content = content
       self.headers = headers
 
-  def setUp(self):#, environ=None):
+  def setUp(self, application=None):
     super(HandlerTest, self).setUp()
+    self.application = application
 
     os.environ['APPLICATION_ID'] = 'app_id'
     self.testbed = testbed.Testbed()
@@ -42,8 +44,6 @@ class HandlerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(urlfetch, 'fetch')
 
     self.environ = {}
-    # if environ:
-    #   self.environ.update(environ)
     wsgiref.util.setup_testing_defaults(self.environ)
     self.environ['HTTP_HOST'] = 'HOST'
     self.request = webapp.Request(self.environ)
@@ -100,3 +100,37 @@ class HandlerTest(mox.MoxTestBase):
       # backwards, all the way up to the root.
       args = ('[%s] ' % key if key is not None else '') + ''.join(e.args)
       raise AssertionError(args)
+
+  def make_get_request(self, path, expected_status, query_params=None,
+                       headers=None):
+    """Makes an internal HTTP request for testing.
+
+    Copied from bridgy/testutil.py.
+
+    Args:
+      method: string, 'GET' or 'POST'
+      path: string, the query URL
+      expected_status: integer, expected HTTP response status code
+      query_params: dict of string to string, query parameters
+      headers: dict of string: string, the HTTP request headers
+
+    Returns:
+      webapp.Response
+    """
+    self.environ['REQUEST_METHOD'] = 'GET'
+    self.environ['PATH_INFO'] = path
+    if query_params:
+      self.environ['QUERY_STRING'] = urllib.urlencode(query_params)
+
+    if headers:
+      datastruct.EnvironHeaders(self.environ).update(headers)
+
+    def start_response(status, headers, exc_info=None):
+      assert exc_info is None
+      self.assertTrue(status.startswith(str(expected_status)),
+                      'Expected %s but was %s' % (expected_status, status))
+      self.response.headers = wsgiref.headers.Headers(headers)
+      return self.response.out.write
+
+    self.application(self.environ, start_response)
+    return self.response

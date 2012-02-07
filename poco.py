@@ -7,8 +7,10 @@ TODO: xml
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
+import logging
 import os
 
+import appengine_config
 import facebook
 import twitter
 
@@ -26,7 +28,9 @@ except AttributeError:
 SOURCES = {
   'facebook-portablecontacts': facebook.Facebook,
   'twitter-portablecontacts': twitter.Twitter,
+  None: None,
   }
+SOURCE = SOURCES[APP_ID]
 
 
 class BaseHandler(webapp.RequestHandler):
@@ -39,8 +43,9 @@ class BaseHandler(webapp.RequestHandler):
     source: Source subclass
   """
 
-  def __init__(self):
-    self.source = SOURCES[APP_ID](self)
+  def __init__(self, *args, **kwargs):
+    super(BaseHandler, self).__init__(*args, **kwargs)
+    self.source = SOURCE(self)
 
   def make_response(self, contacts):
     """Args:
@@ -52,43 +57,39 @@ class BaseHandler(webapp.RequestHandler):
         'itemsPerPage': 10,
         'totalResults': len(contacts),
         'entry': contacts,
-        }))
+        },
+        indent=2))  # pretty-print
 
 class AllHandler(BaseHandler):
   """Returns all contacts.
   """
   def get(self):
-    return self.make_response(self.source.get_contacts())
+    self.make_response(self.source.get_contacts())
 
 
 class SelfHandler(BaseHandler):
   """Returns the currently authenticated user's contact.
   """
   def get(self):
-    return self.make_response(
-        self.source.get_contacts(user_id=self.source.get_current_user_id()))
+    self.make_response(self.source.get_contacts(
+        user_id=self.source.get_current_user_id()))
 
 
 class UserIdHandler(BaseHandler):
   """Returns a single user's contact.
   """
-  def get(self):
-    # extract user id from request path
-    path = self.request.path_info
-    if path.endswith('/'):
-      path = path[:-1]
-    _, user_id = os.path.split(path)
+  def get(self, user_id):
+    self.make_response(self.source.get_contacts(user_id=int(user_id)))
 
-    return self.make_response(self.source.get_contacts(user_id=int(user_id)))
 
+application = webapp.WSGIApplication(
+    [('/poco/@me/@all/?', AllHandler),
+     ('/poco/@me/@self/?', SelfHandler),
+     ('/poco/@me/([0-9]+)/?', UserIdHandler),
+     ],
+    debug=appengine_config.DEBUG)
 
 def main():
-  application = webapp.WSGIApplication(
-      [('/poco/@me/@all/?', AllHandler),
-       ('/poco/@me/@self/?', SelfHandler),
-       ('/poco/@me/([0-9]+)/?', UserIdHandler),
-       ],
-      debug=appengine_config.DEBUG)
   run_wsgi_app(application)
 
 

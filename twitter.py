@@ -1,6 +1,8 @@
 #!/usr/bin/python
 """Twitter source class.
 
+snarfed_org user id: 139199211
+
 Python code to pretty-print JSON response from Twitter REST API:
 
 import json, urllib
@@ -31,7 +33,7 @@ class Twitter(source.Source):
   """Implements the PortableContacts API for Twitter.
   """
 
-  SOURCE_DOMAIN = 'twitter.com'
+  DOMAIN = 'twitter.com'
 
   def get_contacts(self, user_id=None):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
@@ -77,7 +79,7 @@ class Twitter(source.Source):
       tw: dict, a decoded JSON Twitter user
     """
     pc = collections.defaultdict(dict)
-    pc['accounts'] = [{'domain': self.SOURCE_DOMAIN}]
+    pc['accounts'] = [{'domain': self.DOMAIN}]
   
     # tw should always have 'id'
     if 'id' in tw:

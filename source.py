@@ -13,7 +13,8 @@ from google.appengine.api import urlfetch
 class Source(object):
   """Abstract base class for a source (e.g. Facebook, Twitter).
 
-  Concrete subclasses must implement get_contacts() and get_current_user_id().
+  Concrete subclasses must override DOMAIN and implement get_contacts() and
+  get_current_user_id().
 
   OAuth credentials may be extracted from the current request's HTTP headers,
   e.g. 'Authentication', or query parameters, e.g. access_token for Facebook.
@@ -23,7 +24,12 @@ class Source(object):
 
   Attributes:
     handler: the current RequestHandler
+
+  Class constants:
+    DOMAIN: the source's domain
   """
+
+  DOMAIN = None
 
   def __init__(self, handler):
     self.handler = handler

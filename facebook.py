@@ -23,7 +23,7 @@ class Facebook(source.Source):
   """Implements the PortableContacts API for Facebook.
   """
 
-  SOURCE_DOMAIN = 'facebook.com'
+  DOMAIN = 'facebook.com'
 
   def to_poco(self, fb):
     """Converts a Facebook user to a PoCo contact.
@@ -40,7 +40,7 @@ class Facebook(source.Source):
     # fb should always have 'id'
     if 'id' in fb:
       pc['id'] = fb['id']
-      pc['accounts'] = [{'domain': self.SOURCE_DOMAIN, 'userid': fb['id']}]
+      pc['accounts'] = [{'domain': self.DOMAIN, 'userid': fb['id']}]
   
     if 'username' in fb:
       pc['accounts'][0]['username'] = fb['username']

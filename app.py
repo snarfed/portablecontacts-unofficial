@@ -15,12 +15,12 @@ http://hueniverse.com/drafts/draft-xrds-simple-01.html
 """
 
 __author__ = 'Ryan Barrett <portablecontacts@ryanb.org>'
-
-import appengine_config
-
 import logging
 import os
 import urlparse
+
+import appengine_config
+import poco
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -37,6 +37,7 @@ BASE_HEADERS = {
   'X-XRDS-Location': 'https://%s/.well-known/host-meta.xrds' % HOST,
   }
 BASE_TEMPLATE_VARS = {
+  'domain': poco.SOURCE.DOMAIN,
   'host': HOST,
   }
 
