@@ -5,72 +5,41 @@
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
-import mox
-import unittest
-
-from webob import exc
 
 import poco
+import source
+import source_test
 import testutil
 
 from google.appengine.ext import webapp
 
 
-class FakeHandler(poco.PocoHandler):
-  contacts = None
-  user_id = 0
-
-  def get_contacts(self, user_id=None):
-    return self.contacts
-
-  def get_current_user_id(self):
-    return self.user
-
-
-class PocoHandlerTest(testutil.HandlerTest):
+class HandlersTest(testutil.HandlerTest):
 
   def setUp(self):
-    super(PocoHandlerTest, self).setUp()
-    self.handler = FakeHandler()
-    self.handler.initialize(self.request, self.response)
+    super(HandlersTest, self).setUp()
+    poco.APP_ID = 'test'
+    poco.SOURCES['test'] = source_test.FakeSource
 
-  def test_get_no_contacts(self):
-    self.handler.contacts = []
-    self.handler.get()
-
-    self.assertEquals(200, self.response.status)
+  def assert_response(self, handler, contacts):
+    handler.get()
+    self.assertEquals(200, handler.response.status)
     self.assert_equals({
         'startIndex': 0,
         'itemsPerPage': 10,
-        'totalResults': 0,
-        'entry': self.handler.contacts,
+        'totalResults': len(contacts),
+        'entry': contacts,
         },
-      json.loads(self.response.out.getvalue()))
+      json.loads(handler.response.out.getvalue()))
+
+  def test_all_handler_no_contacts(self):
+    handler = poco.AllHandler()
+    handler.initialize(self.request, self.response)
+    handler.source.contacts = []
+    self.assert_response(handler, [])
 
   def test_get_some_contacts(self):
-    self.handler.contacts = [{'id': 123}, {'id': 456, 'displayName': 'Ryan'}]
-    self.handler.get()
-
-    self.assertEquals(200, self.response.status)
-    self.assert_equals({
-        'startIndex': 0,
-        'itemsPerPage': 10,
-        'totalResults': 2,
-        'entry': self.handler.contacts,
-        },
-      json.loads(self.response.out.getvalue()))
-
-  def test_urlfetch(self):
-    self.expect_urlfetch('http://my/url', 'hello', foo='bar')
-    self.mox.ReplayAll()
-    self.assertEquals('hello', self.handler.urlfetch('http://my/url', foo='bar'))
-
-  def test_urlfetch_error_passes_through(self):
-    self.expect_urlfetch('http://my/url', 'my error', status=408)
-    self.mox.ReplayAll()
-
-    try:
-      self.handler.urlfetch('http://my/url')
-    except exc.HTTPException, e:
-      self.assertEquals(408, e.status_int)
-      self.assertEquals('my error', self.response.out.getvalue())
+    handler = poco.AllHandler()
+    handler.initialize(self.request, self.response)
+    handler.source.contacts = [{'id': 123}, {'id': 456, 'displayName': 'Ryan'}]
+    self.assert_response(handler, handler.source.contacts)

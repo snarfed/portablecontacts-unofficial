@@ -4,17 +4,17 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-import datetime
 import json
-import unittest
 
 import facebook
 import testutil
 
-from google.appengine.ext import webapp
-
 
 class FacebookTest(testutil.HandlerTest):
+
+  def setUp(self):
+    super(FacebookTest, self).setUp()
+    self.facebook = facebook.Facebook(self.handler)
 
   def test_to_poco_id_only(self):
     self.assert_equals({
@@ -23,7 +23,7 @@ class FacebookTest(testutil.HandlerTest):
         'connected': True,
         'relationships': ['friend'],
         },
-      facebook.to_poco({'id': '212038'}))
+      self.facebook.to_poco({'id': '212038'}))
 
   def test_to_poco_minimal(self):
     self.assert_equals({
@@ -37,7 +37,7 @@ class FacebookTest(testutil.HandlerTest):
         'connected': True,
         'relationships': ['friend'],
         },
-      facebook.to_poco({
+      self.facebook.to_poco({
         'id': '212038',
         'name': 'Ryan Barrett',
         'location': {'id': '123', 'name': 'San Francisco, California'},
@@ -90,7 +90,7 @@ class FacebookTest(testutil.HandlerTest):
         'relationships': ['friend'],
         'note': 'something about me',
         },
-      facebook.to_poco({
+      self.facebook.to_poco({
           'id': '212038',
           'name': 'Ryan Barrett',
           'first_name': 'Ryan',

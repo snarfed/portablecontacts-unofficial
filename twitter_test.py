@@ -4,24 +4,17 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-import datetime
 import json
-import unittest
-
-from webob import exc
 
 import testutil
 import twitter
-
-from google.appengine.ext import webapp
 
 
 class TwitterTest(testutil.HandlerTest):
 
   def setUp(self):
     super(TwitterTest, self).setUp()
-    self.handler = twitter.Handler()
-    self.handler.initialize(self.request, self.response)
+    self.twitter = twitter.Twitter(self.handler)
 
   def test_get_contacts(self):
     self.expect_urlfetch(
@@ -61,14 +54,14 @@ class TwitterTest(testutil.HandlerTest):
           'name': {'formatted': 'Ms. Bar'},
           'accounts': [{'domain': 'twitter.com', 'userid': '456'}],
           }],
-      self.handler.get_contacts())
+      self.twitter.get_contacts())
 
   def test_get_contacts_user_id(self):
     self.expect_urlfetch(
       'https://api.twitter.com/1/users/lookup.json?user_id=123',
       '[]')
     self.mox.ReplayAll()
-    self.assert_equals([], self.handler.get_contacts(user_id=123))
+    self.assert_equals([], self.twitter.get_contacts(user_id=123))
 
   def test_get_contacts_passes_through_auth_header(self):
     self.expect_urlfetch(
@@ -82,21 +75,21 @@ class TwitterTest(testutil.HandlerTest):
     self.mox.ReplayAll()
 
     self.handler.request.headers['Authentication'] = 'insert oauth here'
-    self.assert_equals([], self.handler.get_contacts())
+    self.assert_equals([], self.twitter.get_contacts())
 
   def test_get_current_user_id(self):
     self.expect_urlfetch(
       'https://api.twitter.com/1/account/verify_credentials.json',
       '{"id": 9}')
     self.mox.ReplayAll()
-    self.assert_equals(9, self.handler.get_current_user_id())
+    self.assert_equals(9, self.twitter.get_current_user_id())
 
   def test_to_poco_id_only(self):
     self.assert_equals(
         {'id': '139199211',
          'accounts': [{'domain': 'twitter.com', 'userid': '139199211'}],
          },
-        self.handler.to_poco({'id': 139199211}))
+        self.twitter.to_poco({'id': 139199211}))
 
   def test_to_poco_minimal(self):
     self.assert_equals({
@@ -105,7 +98,7 @@ class TwitterTest(testutil.HandlerTest):
         'name': {'formatted': 'Ryan Barrett'},
         'accounts': [{'domain': 'twitter.com', 'userid': '139199211'}],
         },
-      self.handler.to_poco({
+      self.twitter.to_poco({
         'id': 139199211,
         'name': 'Ryan Barrett',
         }))
@@ -132,7 +125,7 @@ class TwitterTest(testutil.HandlerTest):
         'utcOffset': '-08:00',
         'note': 'something about me',
         },
-      self.handler.to_poco({
+      self.twitter.to_poco({
           'description': 'something about me',
           'id': 139199211,
           'id_str': '139199211',

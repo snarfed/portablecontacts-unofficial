@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""Twitter handler and schema mapping code.
+"""Twitter source class.
 
 Python code to pretty-print JSON response from Twitter REST API:
 
@@ -19,23 +19,15 @@ import datetime
 import json
 import logging
 import re
-import urllib
 
-from webob import exc
-
-import appengine_config
-import poco
-
-from google.appengine.api import urlfetch
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
+import source
 
 API_FRIENDS_URL = 'https://api.twitter.com/1/friends/ids.json?user_id=%d'
 API_USERS_URL = 'https://api.twitter.com/1/users/lookup.json?user_id=%s'
 API_ACCOUNT_URL = 'https://api.twitter.com/1/account/verify_credentials.json'
 
 
-class Handler(poco.PocoHandler):
+class Twitter(source.Source):
   """Implements the PortableContacts API for Twitter.
   """
 
@@ -71,15 +63,15 @@ class Handler(poco.PocoHandler):
     return json.loads(resp)['id']
 
   def urlfetch(self, *args, **kwargs):
-    """Wraps PocoHandler.urlfetch and passes through the Authentication header.
+    """Wraps Source.urlfetch() and passes through the Authentication header.
     """
-    if 'Authentication' in self.request.headers:
+    if 'Authentication' in self.handler.request.headers:
       kwargs['headers'] = {'Authentication':
-                             self.request.headers['Authentication']}
-    return super(Handler, self).urlfetch(*args, **kwargs)
+                             self.handler.request.headers['Authentication']}
+    return super(Twitter, self).urlfetch(*args, **kwargs)
 
   def to_poco(self, tw):
-    """Converts a Twitter user to a PoCo user.
+    """Converts a Twitter user to a PoCo contact.
   
     Args:
       tw: dict, a decoded JSON Twitter user
@@ -132,14 +124,3 @@ class Handler(poco.PocoHandler):
       pc['note'] = tw['description']
   
     return dict(pc)
-
-
-application = webapp.WSGIApplication([
-    ], debug=appengine_config.DEBUG)
-
-def main():
-  run_wsgi_app(application)
-
-
-if __name__ == '__main__':
-  main()

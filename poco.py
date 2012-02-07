@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""PocoHandler base class.
+"""PortableContacts API handler classes.
 
 TODO: xml
 """
@@ -7,32 +7,44 @@ TODO: xml
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
-import logging
 
-from webob import exc
+import facebook
+import twitter
 
-import appengine_config
-
-from google.appengine.api import urlfetch
+from google.appengine.api import app_identity
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
+try:
+  APP_ID = app_identity.get_application_id()
+except AttributeError:
+  # this is probably a unit test
+  APP_ID = None
 
-class PocoHandler(webapp.RequestHandler):
-  """Abstract base handler class for PortableContacts API.
+# maps app id to source class
+SOURCES = {
+  'facebook-portablecontacts': facebook.Facebook,
+  'twitter-portablecontacts': twitter.Twitter,
+  }
 
-  Concrete subclasses must implement get_contacts() and get_current_user_id().
 
-  OAuth credentials may be extracted from the current request's HTTP headers,
-  e.g. 'Authentication', or query parameters, e.g. access_token for Facebook.
+class BaseHandler(webapp.RequestHandler):
+  """Base class for PortableContacts API handlers.
 
   TODO: implement paging:
   file:///home/ryanb/docs/portablecontacts_spec.html#anchor14
+
+  Attributes:
+    source: Source subclass
   """
 
-  def get(self):
-    contacts = self.get_contacts()
+  def __init__(self):
+    self.source = SOURCES[APP_ID](self)
 
+  def make_response(self, contacts):
+    """Args:
+      contacts: list of PoCo contact dicts
+    """
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(json.dumps({
         'startIndex': 0,
@@ -41,41 +53,37 @@ class PocoHandler(webapp.RequestHandler):
         'entry': contacts,
         }))
 
-  def get_contacts(self, user_id=None):
-    """Return a (Python) list of PoCo contacts to be JSON-encoded.
+class AllHandler(BaseHandler):
+  """Returns all contacts.
+  """
+  def get(self):
+    return self.make_response(self.source.get_contacts())
 
-    If user_id is provided, only that user's contact(s) are included.
 
-    Args:
-      user_id: int
-    """
-    raise NotImplementedError()
+class SelfHandler(BaseHandler):
+  """Returns the currently authenticated user's contact.
+  """
+  def get(self):
+    return self.make_response(
+        self.source.get_contacts(user_id=self.get_current_user_id()))
 
-  def get_current_user_id(self):
-    """Returns the currently authenticated user's id (an integer).
-    """
-    raise NotImplementedError()
 
-  def urlfetch(self, url, **kwargs):
-    """Wraps urlfetch. Passes error responses through to the client.
+class UserIdHandler(BaseHandler):
+  """Returns a single user's contact.
+  """
+  def get(self):
+    return self.make_response(self.source.get_contacts(user_id=XXX))
 
-    ...by raising HTTPException.
 
-    Args:
-      url: str
-      kwargs: passed through to urlfetch.fetch()
+def main():
+  application = webapp.WSGIApplication(
+      [('/poco/@me/@all/?', AllHandler),
+       ('/poco/@me/@self/?', SelfHandler),
+       ('/poco/@me/([0-9]+)/?', UserIdHandler),
+       ],
+      debug=appengine_config.DEBUG)
+  run_wsgi_app(application)
 
-    Returns:
-      the HTTP response body
-    """
-    resp = urlfetch.fetch(url, deadline=999, **kwargs)
 
-    if resp.status_code == 200:
-      return resp.content
-    else:
-      # can't update() because webapp.Response.headers isn't a dict and doesn't
-      # have it
-      for key, val in resp.headers.items():
-        self.response.headers[key] = val
-      self.response.out.write(resp.content)
-      raise exc.status_map.get(resp.status_code)(resp.content)
+if __name__ == '__main__':
+  main()

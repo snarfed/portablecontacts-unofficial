@@ -3,16 +3,12 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-import json
 import mox
 import pprint
 import re
-import sys
-import unittest
-import urllib
+import os
 import wsgiref
 
-from google.appengine.api import apiproxy_stub_map
 from google.appengine.api import urlfetch
 from google.appengine.ext import testbed
 from google.appengine.ext import webapp
@@ -25,7 +21,7 @@ class HandlerTest(mox.MoxTestBase):
   http://code.google.com/appengine/docs/python/tools/localunittesting.html
 
   Attributes:
-    app: WSGIApplication
+    handler: webapp.RequestHandler
   """
 
   class UrlfetchResult(object):
@@ -38,6 +34,8 @@ class HandlerTest(mox.MoxTestBase):
 
   def setUp(self):
     super(HandlerTest, self).setUp()
+
+    os.environ['APPLICATION_ID'] = 'app_id'
     self.testbed = testbed.Testbed()
     self.testbed.activate()
     self.testbed.init_urlfetch_stub()
@@ -49,47 +47,8 @@ class HandlerTest(mox.MoxTestBase):
     self.request = webapp.Request(self.environ)
     self.response = webapp.Response()
 
-  #   self.app = server.application()
-
-  # def expect(self, path, expected, args=None, expected_status=200):
-  #   """Makes a request and checks the response.
-
-  #   Args:
-  #     path: string
-  #     expected: if string, the expected response body. if list or dict,
-  #       the expected JSON response contents.
-  #     args: passed to get_response()
-  #     expected_status: integer, expected HTTP response status
-  #   """
-  #   response = None
-  #   results = None
-  #   try:
-  #     response = self.get_response(path, args=args)
-  #     self.assertEquals(expected_status, response.status_int)
-  #     response = response.body
-  #     if isinstance(expected, basestring):
-  #       self.assertEquals(expected, response)
-  #     else:
-  #       results = json.loads(response)
-  #       if not isinstance(expected, list):
-  #         expected = [expected]
-  #       if not isinstance(results, list):
-  #         results = [results]
-  #       expected.sort()
-  #       results.sort()
-  #       self.assertEquals(len(expected), len(results), `expected, results`)
-  #       for e, r in zip(expected, results):
-  #         self.assert_dict_equals(e, r)
-  #   except:
-  #     print >> sys.stderr, '\nquery: %s %s' % (path, args)
-  #     print >> sys.stderr, 'expected: %r' % expected
-  #     print >> sys.stderr, 'received: %r' % results if results else response
-  #     raise
-
-  # def get_response(self, path, args=None):
-  #   if args:
-  #     path = '%s?%s' % (path, urllib.urlencode(args))
-  #   return self.app.get_response(path)
+    self.handler = webapp.RequestHandler()
+    self.handler.initialize(self.request, self.response)
 
   def expect_urlfetch(self, expected_url, response, status=200, **kwargs):
     """Stubs out urlfetch.fetch() and sets up an expected call.
@@ -100,11 +59,6 @@ class HandlerTest(mox.MoxTestBase):
       status: int, HTTP response code
       kwargs: passed to urlfetch.fetch()
     """
-    # if isinstance(expected_url, mox.Comparator):
-    #   comparator = expected_url
-    # else:
-    #   comparator = mox.Regex(expected_url)
-
     urlfetch.fetch(expected_url, deadline=999, **kwargs).AndReturn(
       self.UrlfetchResult(status, response))
 
