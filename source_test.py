@@ -15,7 +15,10 @@ class FakeSource(source.Source):
   user_id = 0
 
   def get_contacts(self, user_id=None):
-    return self.contacts
+    if user_id:
+      return [c for c in self.contacts if c['id'] == user_id]
+    else:
+      return self.contacts
 
   def get_current_user_id(self):
     return self.user_id

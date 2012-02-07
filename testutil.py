@@ -32,7 +32,7 @@ class HandlerTest(mox.MoxTestBase):
       self.content = content
       self.headers = headers
 
-  def setUp(self):
+  def setUp(self):#, environ=None):
     super(HandlerTest, self).setUp()
 
     os.environ['APPLICATION_ID'] = 'app_id'
@@ -42,6 +42,8 @@ class HandlerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(urlfetch, 'fetch')
 
     self.environ = {}
+    # if environ:
+    #   self.environ.update(environ)
     wsgiref.util.setup_testing_defaults(self.environ)
     self.environ['HTTP_HOST'] = 'HOST'
     self.request = webapp.Request(self.environ)

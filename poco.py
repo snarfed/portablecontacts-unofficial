@@ -7,6 +7,7 @@ TODO: xml
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
+import os
 
 import facebook
 import twitter
@@ -65,14 +66,20 @@ class SelfHandler(BaseHandler):
   """
   def get(self):
     return self.make_response(
-        self.source.get_contacts(user_id=self.get_current_user_id()))
+        self.source.get_contacts(user_id=self.source.get_current_user_id()))
 
 
 class UserIdHandler(BaseHandler):
   """Returns a single user's contact.
   """
   def get(self):
-    return self.make_response(self.source.get_contacts(user_id=XXX))
+    # extract user id from request path
+    path = self.request.path_info
+    if path.endswith('/'):
+      path = path[:-1]
+    _, user_id = os.path.split(path)
+
+    return self.make_response(self.source.get_contacts(user_id=int(user_id)))
 
 
 def main():
