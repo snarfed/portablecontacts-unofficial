@@ -20,7 +20,7 @@ class FakeSource(source.Source):
     else:
       return self.contacts
 
-  def get_current_user_id(self):
+  def get_current_user(self):
     return self.user_id
 
 

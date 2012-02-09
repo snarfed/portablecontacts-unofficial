@@ -14,7 +14,7 @@ class Source(object):
   """Abstract base class for a source (e.g. Facebook, Twitter).
 
   Concrete subclasses must override DOMAIN and implement get_contacts() and
-  get_current_user_id().
+  get_current_user().
 
   OAuth credentials may be extracted from the current request's HTTP headers,
   e.g. 'Authentication', or query parameters, e.g. access_token for Facebook.
@@ -44,8 +44,8 @@ class Source(object):
     """
     raise NotImplementedError()
 
-  def get_current_user_id(self):
-    """Returns the currently authenticated user's id (an integer).
+  def get_current_user(self):
+    """Returns the current (authed) user, either integer id or string username.
     """
     raise NotImplementedError()
 

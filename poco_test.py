@@ -63,7 +63,7 @@ class HandlersTest(testutil.HandlerTest):
                             {'id': 123},
                             {'id': 456, 'displayName': 'Foo'},
                             ]
-    self.assert_response('/poco/@me/456/',
+    self.assert_response('/poco/@me/@all/456/',
                          [{'id': 456, 'displayName': 'other'},
                           {'id': 456, 'displayName': 'Foo'},
                           ])

@@ -77,12 +77,12 @@ class TwitterTest(testutil.HandlerTest):
     self.handler.request.headers['Authentication'] = 'insert oauth here'
     self.assert_equals([], self.twitter.get_contacts())
 
-  def test_get_current_user_id(self):
+  def test_get_current_user(self):
     self.expect_urlfetch(
       'https://api.twitter.com/1/account/verify_credentials.json',
       '{"id": 9}')
     self.mox.ReplayAll()
-    self.assert_equals(9, self.twitter.get_current_user_id())
+    self.assert_equals(9, self.twitter.get_current_user())
 
   def test_to_poco_id_only(self):
     self.assert_equals(

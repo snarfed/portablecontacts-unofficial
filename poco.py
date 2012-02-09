@@ -72,7 +72,7 @@ class SelfHandler(BaseHandler):
   """
   def get(self):
     self.make_response(self.source.get_contacts(
-        user_id=self.source.get_current_user_id()))
+        user_id=self.source.get_current_user()))
 
 
 class UserIdHandler(BaseHandler):
@@ -83,9 +83,9 @@ class UserIdHandler(BaseHandler):
 
 
 application = webapp.WSGIApplication(
-    [('/poco/@me/@all/?', AllHandler),
-     ('/poco/@me/@self/?', SelfHandler),
-     ('/poco/@me/([0-9]+)/?', UserIdHandler),
+    [('/poco/@me/@self/?', SelfHandler),
+     ('/poco/@me/@all/?', AllHandler),
+     ('/poco/@me/@all/([0-9]+)/?', UserIdHandler),
      ],
     debug=appengine_config.DEBUG)
 
