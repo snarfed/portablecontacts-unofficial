@@ -26,19 +26,15 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 
-# app_identity.get_default_version_hostname() would be better here, but
-# it doesn't work in dev_appserver since that doesn't set
-# os.environ['DEFAULT_VERSION_HOSTNAME'].
-HOST = os.getenv('HTTP_HOST')
-
 # Included in most static HTTP responses.
 BASE_HEADERS = {
   'Cache-Control': 'max-age=300',
-  'X-XRDS-Location': 'https://%s/.well-known/host-meta.xrds' % HOST,
+  'X-XRDS-Location': 'https://%s/.well-known/host-meta.xrds' %
+    appengine_config.HOST,
   }
 BASE_TEMPLATE_VARS = {
   'domain': poco.SOURCE.DOMAIN,
-  'host': HOST,
+  'host': appengine_config.HOST,
   }
 
 

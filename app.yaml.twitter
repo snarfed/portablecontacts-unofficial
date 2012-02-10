@@ -20,3 +20,7 @@ handlers:
 - url: /poco/.*
   script: poco.py
   secure: always
+
+- url: /twitter_oauth_callback
+  script: twitter_oauth.py
+  secure: always

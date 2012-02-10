@@ -1,0 +1,28 @@
+<html>
+
+    <head>
+        <title>Tweepy OAuth Example -- callback</title>
+    </head>
+
+    <body>
+        <h1>Success!</h1>
+        <h3>
+			<form method="post" action="/oauth/submit.do" name="tweetform">
+			Tweet something:
+			<input type="text" name="tweettext" />
+			<br>
+			<input type="text" name="key" value={{access_token.key}} />
+			<br>
+			<input type="text" name="secret" value={{access_token.secret}} />			
+			<br>			
+			<input type="submit" value="Tweet it!" />
+			</form>
+		</h3>
+        <h1>Access token</h1>
+        <ul>
+            <li><b>Key:</b> {{access_token.key}}</li>
+            <li><b>Secret:</b> {{access_token.secret}}</li>
+        </ul>
+    </body>
+
+</html>
