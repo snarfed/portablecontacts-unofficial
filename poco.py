@@ -14,23 +14,14 @@ import appengine_config
 import facebook
 import twitter
 
-from google.appengine.api import app_identity
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-try:
-  APP_ID = app_identity.get_application_id()
-except AttributeError:
-  # this is probably a unit test
-  APP_ID = None
-
 # maps app id to source class
-SOURCES = {
+SOURCE = {
   'facebook-portablecontacts': facebook.Facebook,
   'twitter-portablecontacts': twitter.Twitter,
-  None: None,
-  }
-SOURCE = SOURCES[APP_ID]
+  }.get(appengine_config.APP_ID)
 
 
 class BaseHandler(webapp.RequestHandler):
@@ -64,6 +55,7 @@ class AllHandler(BaseHandler):
   """Returns all contacts.
   """
   def get(self):
+    logging.warning('all')
     self.make_response(self.source.get_contacts())
 
 
@@ -83,9 +75,11 @@ class UserIdHandler(BaseHandler):
 
 
 application = webapp.WSGIApplication(
-    [('/poco/@me/@self/?', SelfHandler),
-     ('/poco/@me/@all/?', AllHandler),
-     ('/poco/@me/@all/([0-9]+)/?', UserIdHandler),
+    # based on the poco spec: http://portablecontacts.net/draft-spec.html#anchor11
+    [('/poco/?', AllHandler),
+     ('/poco/%40me/%40all/?', AllHandler),
+     ('/poco/%40me/%40all/([0-9]+)/?', UserIdHandler),
+     ('/poco/%40me/%40self/?', SelfHandler),
      ],
     debug=appengine_config.DEBUG)
 

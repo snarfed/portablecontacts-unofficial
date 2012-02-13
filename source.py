@@ -5,6 +5,7 @@
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
+import logging
 from webob import exc
 
 from google.appengine.api import urlfetch
@@ -66,6 +67,8 @@ class Source(object):
     if resp.status_code == 200:
       return resp.content
     else:
+      logging.warning('GET %s returned %d:\n%s',
+                      url, resp.status_code, resp.content)
       # can't update() because webapp.Response.headers isn't a dict and doesn't
       # have it
       for key, val in resp.headers.items():

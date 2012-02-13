@@ -40,15 +40,17 @@ class HandlersTest(testutil.HandlerTest):
         },
       json.loads(resp.out.getvalue()))
 
-  def test_all_handler_no_contacts(self):
+  def test_all_no_contacts(self):
     poco.SOURCE.contacts = []
-    self.assert_response('/poco/@me/@all/', [])
+    for url in '/poco', '/poco/', '/poco/@me/@all', '/poco/@me/@all/':
+      self.setUp()
+      self.assert_response(url, [])
 
-  def test_all_handler_get_some_contacts(self):
+  def test_all_get_some_contacts(self):
     poco.SOURCE.contacts = [{'id': 123}, {'id': 456, 'displayName': 'Ryan'}]
     self.assert_response('/poco/@me/@all/', poco.SOURCE.contacts)
 
-  def test_self_handler(self):
+  def test_self(self):
     poco.SOURCE.user_id = 9
     poco.SOURCE.contacts = [{'id': 9, 'displayName': 'me'},
                             {'id': 123},
@@ -58,7 +60,7 @@ class HandlersTest(testutil.HandlerTest):
                          [{'id': 9, 'displayName': 'me'},
                           {'id': 9, 'displayName': 'Ryan'}])
 
-  def test_user_id_handler(self):
+  def test_user_id(self):
     poco.SOURCE.contacts = [{'id': 456, 'displayName': 'other'},
                             {'id': 123},
                             {'id': 456, 'displayName': 'Foo'},

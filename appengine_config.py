@@ -3,14 +3,27 @@
 
 import os
 
+from google.appengine.api import app_identity
+
+try:
+  APP_ID = app_identity.get_application_id()
+except AttributeError:
+  # this is probably a unit test
+  APP_ID = None
+
 # app_identity.get_default_version_hostname() would be better here, but
 # it doesn't work in dev_appserver since that doesn't set
 # os.environ['DEFAULT_VERSION_HOSTNAME'].
 HOST = os.getenv('HTTP_HOST')
 
 TWITTER_APP_KEY = '1BsluYKc6dSRdI07VPTUhA'
-with open('twitter_app_secret') as f:
-  TWITTER_APP_SECRET = f.read().strip()
+TWITTER_APP_SECRET_FILE = 'twitter_app_secret'
+if os.path.exists(TWITTER_APP_SECRET_FILE):
+  with open(TWITTER_APP_SECRET_FILE) as f:
+    TWITTER_APP_SECRET = f.read().strip()
+else:
+  logging.warning('%s file not found, cannot authenticate to twitter.' %
+                  TWITTER_APP_SECRET_FILE)
 
 if not os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
   DEBUG = False

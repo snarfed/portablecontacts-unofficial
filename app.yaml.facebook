@@ -9,10 +9,14 @@ handlers:
 - url: /static
   static_dir: static
 
-- url: /|/.well-known/.*
+- url: /(facebook_oauth_callback)?
+  script: facebook_demo.py
+  secure: always
+
+- url: /.well-known/host-meta(\.xrds)?
   script: app.py
   secure: always
 
-- url: /poco/.*
+- url: /poco(/.*)?
   script: poco.py
   secure: always
