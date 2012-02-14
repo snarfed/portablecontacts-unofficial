@@ -29,7 +29,7 @@ class Facebook(source.Source):
   def get_contacts(self, user_id=None):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
 
-    The OAuth 'Authentication' header must be provided if the current user is
+    The OAuth 'Authorization' header must be provided if the current user is
     protected, or to receive any protected friends in the returned contacts.
 
     Args:
@@ -59,8 +59,8 @@ class Facebook(source.Source):
   #   """Wraps Source.urlfetch() and passes through the access_token query param.
   #   """
   #   if 'ac' in self.handler.request.headers:
-  #     kwargs['headers'] = {'Authentication':
-  #                            self.handler.request.headers['Authentication']}
+  #     kwargs['headers'] = {'Authorization':
+  #                            self.handler.request.headers['Authorization']}
   #   return super(Twitter, self).urlfetch(*args, **kwargs)
 
   def to_poco(self, fb):

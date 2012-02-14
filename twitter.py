@@ -22,7 +22,9 @@ import json
 import logging
 import re
 
+import appengine_config
 import source
+import tweepy
 
 API_FRIENDS_URL = 'https://api.twitter.com/1/friends/ids.json?user_id=%d'
 API_USERS_URL = 'https://api.twitter.com/1/users/lookup.json?user_id=%s'
@@ -38,7 +40,7 @@ class Twitter(source.Source):
   def get_contacts(self, user_id=None):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
 
-    The OAuth 'Authentication' header must be provided if the current user is
+    The OAuth 'Authorization' header must be provided if the current user is
     protected, or to receive any protected friends in the returned contacts.
 
     Args:
@@ -64,13 +66,30 @@ class Twitter(source.Source):
     resp = self.urlfetch(API_ACCOUNT_URL)
     return json.loads(resp)['id']
 
-  def urlfetch(self, *args, **kwargs):
-    """Wraps Source.urlfetch() and passes through the Authentication header.
+  def urlfetch(self, url, **kwargs):
+    """Wraps Source.urlfetch() and passes through the Authorization header.
     """
-    if 'Authentication' in self.handler.request.headers:
-      kwargs['headers'] = {'Authentication':
-                             self.handler.request.headers['Authentication']}
-    return super(Twitter, self).urlfetch(*args, **kwargs)
+    request = self.handler.request
+    headers = kwargs.setdefault('headers', {})
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+      logging.info('Passing through Authorization header: %s', auth_header)
+      headers['Authorization'] = auth_header
+
+    access_token_key = request.get('access_token_key')
+    access_token_secret = request.get('access_token_secret')
+    if access_token_key and access_token_secret:
+      logging.info('Found access token key %s and secret %s',
+                   access_token_key, access_token_secret)
+      auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
+                                 appengine_config.TWITTER_APP_SECRET)
+      auth.set_access_token(access_token_key, access_token_secret)
+      method = kwargs.get('method', 'GET')
+      auth.apply_auth(url, method, headers, {})
+      logging.info('Populated Authorization header: %s',
+                   headers.get('Authorization'))
+
+    return super(Twitter, self).urlfetch(url, **kwargs)
 
   def to_poco(self, tw):
     """Converts a Twitter user to a PoCo contact.
@@ -113,7 +132,8 @@ class Twitter(source.Source):
           'type': 'home',
           }]
 
-    if 'time_zone' in tw:
+    utc_offset = tw.get('utc_offset')
+    if utc_offset is not None:
       # twitter's utc_offset field is seconds, oddly, not hours.
       pc['utcOffset'] =  '%+03d:00' % (tw['utc_offset'] / 60 / 60)
 

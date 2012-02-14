@@ -55,7 +55,6 @@ class AllHandler(BaseHandler):
   """Returns all contacts.
   """
   def get(self):
-    logging.warning('all')
     self.make_response(self.source.get_contacts())
 
 
@@ -77,6 +76,7 @@ class UserIdHandler(BaseHandler):
 application = webapp.WSGIApplication(
     # based on the poco spec: http://portablecontacts.net/draft-spec.html#anchor11
     [('/poco/?', AllHandler),
+     # quote the @s :/
      ('/poco/%40me/%40all/?', AllHandler),
      ('/poco/%40me/%40all/([0-9]+)/?', UserIdHandler),
      ('/poco/%40me/%40self/?', SelfHandler),

@@ -18,12 +18,12 @@ handlers:
 - url: /static
   static_dir: static
 
-- url: /(twitter_oauth_callback)?
-  script: twitter_demo.py
+- url: /(.well-known/.*)?
+  script: app.py
   secure: always
 
-- url: /.well-known/host-meta(\.xrds)?
-  script: app.py
+- url: /(start_auth|oauth_callback)
+  script: twitter_demo.py
   secure: always
 
 - url: /poco(/.*)?

@@ -15,13 +15,13 @@ import testutil
 from google.appengine.ext import webapp
 
 
-# bleh, ugly. webob.Request url-encodes request paths by default, which converts
-# @ to %40. we use @ in URL mappings in poco.py, e.g. /poco/@me/@all/, which
-# don't match %40.
-#
-# oddly though, webob.Request only does that url encoding in unit tests, *not*
-# in dev_appserver or prod. so, monkey patch it here to not url encode.
-webob.Request.path = property(lambda self: self.script_name + self.path_info)
+# # bleh, ugly. webob.Request url-encodes request paths by default, which converts
+# # @ to %40. we use @ in URL mappings in poco.py, e.g. /poco/@me/@all/, which
+# # don't match %40.
+# #
+# # oddly though, webob.Request only does that url encoding in unit tests, *not*
+# # in dev_appserver or prod. so, monkey patch it here to not url encode.
+# webob.Request.path = property(lambda self: self.script_name + self.path_info)
 
 
 class HandlersTest(testutil.HandlerTest):

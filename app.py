@@ -37,11 +37,6 @@ BASE_TEMPLATE_VARS = {
   'host': appengine_config.HOST,
   }
 
-# FRONT_PAGE_HANDLER = {
-#   'facebook-portablecontacts': facebook_demo.FrontPageHandler,
-#   'twitter-portablecontacts': twitter_demo.FrontPageHandler,
-#   }.get(appengine_config.APP_ID)
-
 
 class TemplateHandler(webapp.RequestHandler):
   """Renders and serves a template based on class attributes.
@@ -67,15 +62,15 @@ class TemplateHandler(webapp.RequestHandler):
     # can't update() because wsgiref.headers.Headers doesn't have it.
     for key, val in BASE_HEADERS.items():
       self.response.headers[key] = val
+    self.template_vars.update(self.request.params)
     self.response.out.write(template.render(self.template_file,
                                             self.template_vars))
 
 
-# class FrontPageHandler(TemplateHandler):
-#   """Renders and serves /, ie the front page.
-#   """
-#   content_type = 'text/html'
-#   template_file = os.path.join('templates', INDEX_TEMPLATE)
+class FrontPageHandler(TemplateHandler):
+  """Renders and serves /, ie the front page.
+  """
+  template_file = 'templates/index.html'
 
 
 class HostMetaXrdHandler(TemplateHandler):
@@ -94,7 +89,8 @@ class HostMetaXrdsHandler(TemplateHandler):
 
 def main():
   application = webapp.WSGIApplication(
-      [('/.well-known/host-meta', HostMetaXrdHandler),
+      [('/', FrontPageHandler),
+       ('/.well-known/host-meta', HostMetaXrdHandler),
        ('/.well-known/host-meta.xrds', HostMetaXrdsHandler),
        ],
       debug=appengine_config.DEBUG)

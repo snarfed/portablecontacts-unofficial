@@ -1,5 +1,7 @@
 #!/usr/bin/python
 """Unit tests for twitter.py.
+
+TODO: test for null values, e.g. for utc_offset
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
@@ -67,14 +69,14 @@ class TwitterTest(testutil.HandlerTest):
     self.expect_urlfetch(
       'https://api.twitter.com/1/account/verify_credentials.json',
       '{"id": 9}',
-      headers={'Authentication': 'insert oauth here'})
+      headers={'Authorization': 'insert oauth here'})
     self.expect_urlfetch(
       'https://api.twitter.com/1/friends/ids.json?user_id=9',
       '{"ids": []}',
-      headers={'Authentication': 'insert oauth here'})
+      headers={'Authorization': 'insert oauth here'})
     self.mox.ReplayAll()
 
-    self.handler.request.headers['Authentication'] = 'insert oauth here'
+    self.handler.request.headers['Authorization'] = 'insert oauth here'
     self.assert_equals([], self.twitter.get_contacts())
 
   def test_get_current_user(self):
@@ -134,7 +136,6 @@ class TwitterTest(testutil.HandlerTest):
           'profile_image_url': 'http://a1.twimg.com/profile_images/866165047/ryan_normal.jpg',
           'screen_name': 'snarfed_org',
           'created_at': 'Wed May 23 06:01:13 +0000 2007',
-          'time_zone': 'Pacific Time (US & Canada)',
           'url': 'http://snarfed.org/',
           'utc_offset': -28800,
           }))

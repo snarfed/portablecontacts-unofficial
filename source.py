@@ -18,7 +18,7 @@ class Source(object):
   get_current_user().
 
   OAuth credentials may be extracted from the current request's HTTP headers,
-  e.g. 'Authentication', or query parameters, e.g. access_token for Facebook.
+  e.g. 'Authorization', or query parameters, e.g. access_token for Facebook.
 
   TODO: implement paging:
   file:///home/ryanb/docs/portablecontacts_spec.html#anchor14
