@@ -12,7 +12,7 @@ default_expiration: 1d
 #   resp = urlopen(Request(url, headers=request.to_header()))
 # File ".../google_appengine/google/appengine/dist27/urllib.py", line 926, in __init__
 #   self.readline = self.fp.readline
-runtime: python25
+runtime: python
 
 handlers:
 - url: /static

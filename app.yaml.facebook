@@ -1,6 +1,7 @@
 application: facebook-portablecontacts
 version: 1
-runtime: python27
+# ideally python27 but tweepy is incompatible. :/ details in app.yaml.twitter.
+runtime: python
 threadsafe: false
 api_version: 1
 default_expiration: 1d
