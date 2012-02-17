@@ -16,12 +16,6 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 
-class FrontPageHandler(TemplateHandler):
-  """Renders and serves /, ie the front page.
-  """
-  template_file = 'templates/facebook_index.html'
-
-
 class CallbackHandler(webapp.RequestHandler):
   """The OAuth callback. Fetches an access token and redirects to the front page.
   """

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 """Facebook source class.
 
-STATE: injecting access_token in urlfetch() here
+STATE: unit tests for new fb stuff, e.g. passing through access_token
 
 NOTE:
 eventually fb will turn phone and address back on. when they do, add scopes:
@@ -15,9 +15,12 @@ https://developers.facebook.com/blog/post/446/
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
+import cgi
 import collections
 import datetime
 import json
+import urllib
+import urlparse
 
 import appengine_config
 import source
@@ -93,8 +96,13 @@ class Facebook(source.Source):
     """
     access_token = self.handler.request.get('access_token')
     if access_token:
-      parsed = tuple(urlparse.urlparse(url))
-      kwargs['headers'] = access_token
+      parsed = list(urlparse.urlparse(url))
+      # query params are in index 4
+      # TODO: when this is on python 2.7, switch to urlparse.parse_qsl
+      params = cgi.parse_qsl(parsed[4]) + [('access_token', access_token)]
+      parsed[4] = urllib.urlencode(params)
+      url = urlparse.urlunparse(parsed)
+
     return super(Facebook, self).urlfetch(url, **kwargs)
 
   def to_poco(self, fb):
