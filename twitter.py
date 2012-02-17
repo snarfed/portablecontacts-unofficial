@@ -70,11 +70,10 @@ class Twitter(source.Source):
     """Wraps Source.urlfetch() and passes through the Authorization header.
     """
     request = self.handler.request
-    headers = kwargs.setdefault('headers', {})
     auth_header = request.headers.get('Authorization')
     if auth_header:
       logging.info('Passing through Authorization header: %s', auth_header)
-      headers['Authorization'] = auth_header
+      kwargs.setdefault('headers', {})['Authorization'] = auth_header
 
     access_token_key = request.get('access_token_key')
     access_token_secret = request.get('access_token_secret')

@@ -1,21 +1,22 @@
 application: facebook-portablecontacts
 version: 1
-# ideally python27 but tweepy is incompatible. :/ details in app.yaml.twitter.
-runtime: python
 threadsafe: false
 api_version: 1
 default_expiration: 1d
+
+# ideally python27 but tweepy is incompatible. :/ details in app.yaml.twitter.
+runtime: python27
 
 handlers:
 - url: /static
   static_dir: static
 
-- url: /(facebook_oauth_callback)?
-  script: facebook_demo.py
+- url: /(.well-known/.*)?
+  script: app.py
   secure: always
 
-- url: /.well-known/host-meta(\.xrds)?
-  script: app.py
+- url: /(start_auth|oauth_callback)
+  script: facebook_demo.py
   secure: always
 
 - url: /poco(/.*)?

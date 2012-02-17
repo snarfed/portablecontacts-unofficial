@@ -4,52 +4,90 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
+import logging
+import urllib
+from webob import exc
+
 import app
 import appengine_config
 
-from google.appengine.ext import webapp
 from google.appengine.ext import db
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp.util import run_wsgi_app
 
 CALLBACK = 'http://%s/oauth/callback' % appengine_config.HOST
 
 
-class FrontPageHandler(app.TemplateHandler):
-  """Renders and serves the front page.
+class OAuthToken(db.Model):
+  """Datastore model class for an OAuth token.
+  """
+  token_key = db.StringProperty(required=True)
+  token_secret = db.StringProperty(required=True)
+
+
+class StartAuthHandler(webapp.RequestHandler):
+  """Starts three-legged OAuth with Twitter.
+
+  Fetches an OAuth request token, then redirects to Twitter's auth page to
+  request an access token.
+  """
+  def get(self):
+    # try:
+    #   auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
+    #                              appengine_config.TWITTER_APP_SECRET,
+    #                              OAUTH_CALLBACK)
+    #   auth_url = auth.get_authorization_url()
+    # except tweepy.TweepError, e:
+    #   msg = 'Could not create Twitter OAuth request token: '
+    #   logging.exception(msg)
+    #   raise exc.HTTPInternalServerError(msg + `e`)
+
+    # # store the request token for later use in the callback handler
+    # OAuthToken(token_key = auth.request_token.key,
+    #            token_secret = auth.request_token.secret,
+    #            ).put()
+    logging.info('Generated request token, redirecting to Twitter: %s', auth_url)
+    self.redirect(auth_url)
+
+
+class CallbackHandler(app.TemplateHandler):
+  """The OAuth callback. Fetches an access token and redirects to the front page.
   """
 
   def get(self):
-    # Build a new oauth handler and display authorization url to user.
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET, CALLBACK)
+    oauth_token = self.request.get('oauth_token', None)
+    oauth_verifier = self.request.get('oauth_verifier', None)
+    if oauth_token is None:
+      raise exc.HTTPBadRequest('Missing required query parameter oauth_token.')
+
+    # Lookup the request token
+    request_token = OAuthToken.gql('WHERE token_key=:key', key=oauth_token).get()
+    if request_token is None:
+      raise exc.HTTPBadRequest('Invalid oauth_token: %s' % oauth_token)
+
+    # Rebuild the auth handler
+    auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
+                               appengine_config.TWITTER_APP_SECRET)
+    auth.set_request_token(request_token.token_key, request_token.token_secret)
+
+    # Fetch the access token
     try:
-      print template.render('oauth_example/main.html', {
-          'authurl': auth.get_authorization_url(),
-          'request_token': auth.request_token
-      })
+      access_token = auth.get_access_token(oauth_verifier)
     except tweepy.TweepError, e:
-      # Failed to get a request token
-      print template.render('twitter_error.html', {'message': e})
-      return
+      msg = 'Twitter OAuth error, could not get access token: '
+      logging.exception(msg)
+      raise exc.HTTPInternalServerError(msg + `e`)
 
-    # We must store the request token for later use in the callback page.
-    request_token = OAuthToken(
-        token_key = auth.request_token.key,
-        token_secret = auth.request_token.secret
-    )
-    request_token.put()
-
-
-class CallbackPage(RequestHandler):
-  """The OAuth callback.
-  """
-
-  def get(self):
-    pass
+    params = {'access_token_key': access_token.key,
+              'access_token_secret': access_token.secret,
+              }
+    self.redirect('/?%s' % urllib.urlencode(params))
 
 
 def main():
   application = webapp.WSGIApplication(
-      [('/', FrontPageHandler),
-       ('/facebook_oauth_callback', CallbackHandler),
+      [('/start_auth', StartAuthHandler),
+       ('/oauth_callback', CallbackHandler),
        ],
       debug=appengine_config.DEBUG)
   run_wsgi_app(application)

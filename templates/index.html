@@ -6,10 +6,11 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <meta http-equiv="X-XRDS-Location"
         content="http://{{ host }}/.well-known/host-meta.xrds" />
+  <script type="text/javascript" src="/static/demo.js"></script>
   <title>PortableContacts for {{ domain }}</title>
 </head>
 
-<body style="max-width: 700px">
+<body style="max-width: 700px" onload="update_userid_field()">
 <h1>PortableContacts for {{ domain }}</h1>
 
 <a href="http://portablecontacts.net/">
@@ -56,36 +57,23 @@ iframe {
 }
 </style>
 
-<script type="text/javascript">
-function get_demo_url() {
-  var all_or_self = document.getElementById("all_or_self").value;
-  var userid = document.getElementById("userid").value;
-  if (userid == "user id (optional)")
-    userid = "";
-  return "/poco/@me/@" + all_or_self + "/" + userid;
-}
-</script>
-
 <p>URL: <code>/ poco / @me /
-<select id="all_or_self" name="all_or_self">
+<select id="all_or_self" name="all_or_self" onchange="update_userid_field()">
   <option value="all">@all</input>
   <option value="self">@self</input>
 </select> /
 <input id="userid" name="userid" type="text" value="user id (optional)" size="12"
-  onfocus="if (this.value == 'user id (optional)') {this.value = ''; this.style.color = 'black'}"
-  onblur= "if (this.value == '') {this.value = 'user id (optional)'; this.style.color = 'gray'}"
+  onfocus="if (this.value == USER_ID_BLURB) {this.value = ''; this.style.color = 'black'}"
+  onblur="update_userid_field()"
   />
 </code></p>
 
 
-<!-- form action is filled in by javascript -->
-<form id="demo" method="get" target="results" />
+<form id="demo" method="get" target="results" onload="update_userid_field()">
 <input type="submit" value="GET" onclick="this.form.action = get_demo_url()" />
 
 <p>OAuth access token (optional)</p>
 <label for="access_token_key">Key:</label>
-<!-- TODO: disable these inputs somehow. disabled="disabled" is no good since
-     then they're not sent as query parameters when the form is submitted. :/ -->
 <input name="access_token_key" type="text" value="{{ access_token_key }}" />
 <br />
 <label for="access_token_secret">Secret:</label>

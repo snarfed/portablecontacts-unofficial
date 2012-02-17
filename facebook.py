@@ -15,8 +15,13 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import collections
 import datetime
+import json
 
 import source
+
+API_FRIENDS_URL = 'https://graph.facebook.com/%s'
+API_USERS_URL = 'https://graph.facebook.com/%s'
+API_ACCOUNT_URL = 'https://graph.facebook.com/%s'
 
 
 class Facebook(source.Source):
@@ -24,7 +29,6 @@ class Facebook(source.Source):
   """
 
   DOMAIN = 'facebook.com'
-
 
   def get_contacts(self, user_id=None):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
@@ -47,13 +51,12 @@ class Facebook(source.Source):
 
     ids_str = ','.join(str(id) for id in ids)
     resp = self.urlfetch(API_USERS_URL % ids_str)
-    return [self.to_poco(user) for user in json.loads(resp)]
+    return [self.to_poco(user) for user in [json.loads(resp)]]
 
-  # def get_current_user_id(self):
-  #   """Returns the currently authenticated user's id (an integer).
-  #   """
-  #   resp = self.urlfetch(API_ACCOUNT_URL)
-  #   return json.loads(resp)['id']
+  def get_current_user_id(self):
+    """Returns the currently authenticated username/user id.
+    """
+    return 'me'
 
   # def urlfetch(self, *args, **kwargs):
   #   """Wraps Source.urlfetch() and passes through the access_token query param.
