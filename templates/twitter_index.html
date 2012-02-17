@@ -1,0 +1,13 @@
+{% extends "index.html" %}
+
+{% block oauth_inputs %}
+<p>
+<label for="access_token_key">Key:</label>
+<input id="access_token_key" name="access_token_key" type="text"
+       value="{{ access_token_key }}" />
+<br />
+<label for="access_token_secret">Secret:</label>
+<input id="access_token_secret" name="access_token_secret" type="text"
+       value="{{ access_token_secret }}" />
+</p>
+{% endblock %}

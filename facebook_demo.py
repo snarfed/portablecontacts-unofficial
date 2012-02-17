@@ -8,49 +8,21 @@ import logging
 import urllib
 from webob import exc
 
-import app
 import appengine_config
+import facebook
 
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-CALLBACK = 'http://%s/oauth/callback' % appengine_config.HOST
 
-
-class OAuthToken(db.Model):
-  """Datastore model class for an OAuth token.
+class FrontPageHandler(TemplateHandler):
+  """Renders and serves /, ie the front page.
   """
-  token_key = db.StringProperty(required=True)
-  token_secret = db.StringProperty(required=True)
+  template_file = 'templates/facebook_index.html'
 
 
-class StartAuthHandler(webapp.RequestHandler):
-  """Starts three-legged OAuth with Twitter.
-
-  Fetches an OAuth request token, then redirects to Twitter's auth page to
-  request an access token.
-  """
-  def get(self):
-    # try:
-    #   auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
-    #                              appengine_config.TWITTER_APP_SECRET,
-    #                              OAUTH_CALLBACK)
-    #   auth_url = auth.get_authorization_url()
-    # except tweepy.TweepError, e:
-    #   msg = 'Could not create Twitter OAuth request token: '
-    #   logging.exception(msg)
-    #   raise exc.HTTPInternalServerError(msg + `e`)
-
-    # # store the request token for later use in the callback handler
-    # OAuthToken(token_key = auth.request_token.key,
-    #            token_secret = auth.request_token.secret,
-    #            ).put()
-    logging.info('Generated request token, redirecting to Twitter: %s', auth_url)
-    self.redirect(auth_url)
-
-
-class CallbackHandler(app.TemplateHandler):
+class CallbackHandler(webapp.RequestHandler):
   """The OAuth callback. Fetches an access token and redirects to the front page.
   """
 
@@ -86,8 +58,7 @@ class CallbackHandler(app.TemplateHandler):
 
 def main():
   application = webapp.WSGIApplication(
-      [('/start_auth', StartAuthHandler),
-       ('/oauth_callback', CallbackHandler),
+      [('/oauth_callback', CallbackHandler),
        ],
       debug=appengine_config.DEBUG)
   run_wsgi_app(application)

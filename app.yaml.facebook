@@ -5,7 +5,7 @@ api_version: 1
 default_expiration: 1d
 
 # ideally python27 but tweepy is incompatible. :/ details in app.yaml.twitter.
-runtime: python27
+runtime: python
 
 handlers:
 - url: /static
@@ -15,7 +15,7 @@ handlers:
   script: app.py
   secure: always
 
-- url: /(start_auth|oauth_callback)
+- url: /oauth_callback
   script: facebook_demo.py
   secure: always
 

@@ -35,7 +35,9 @@ class Twitter(source.Source):
   """Implements the PortableContacts API for Twitter.
   """
 
+  FRONT_PAGE_TEMPLATE = 'templates/twitter_index.html'
   DOMAIN = 'twitter.com'
+  AUTH_URL = '/start_auth'
 
   def get_contacts(self, user_id=None):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.

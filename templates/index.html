@@ -10,7 +10,8 @@
   <title>PortableContacts for {{ domain }}</title>
 </head>
 
-<body style="max-width: 700px" onload="update_userid_field()">
+<body style="max-width: 700px"
+      onload="update_userid_field(); access_token_from_fragment();">
 <h1>PortableContacts for {{ domain }}</h1>
 
 <a href="http://portablecontacts.net/">
@@ -69,17 +70,13 @@ iframe {
 </code></p>
 
 
-<form id="demo" method="get" target="results" onload="update_userid_field()">
+<form id="demo" method="get" target="results">
+<p>OAuth access token (optional):
+{% block oauth_inputs %}
+{% endblock %}
+<a href="{{ auth_url }}">Authenticate</a></p>
 <input type="submit" value="GET" onclick="this.form.action = get_demo_url()" />
-
-<p>OAuth access token (optional)</p>
-<label for="access_token_key">Key:</label>
-<input name="access_token_key" type="text" value="{{ access_token_key }}" />
-<br />
-<label for="access_token_secret">Secret:</label>
-<input name="access_token_secret" type="text" value="{{ access_token_secret }}" />
-<br />
-<p><a href="/start_auth">Authenticate</a></p>
+</p>
 </form>
 
 <iframe name="results">

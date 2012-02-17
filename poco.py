@@ -76,7 +76,7 @@ class UserIdHandler(BaseHandler):
 application = webapp.WSGIApplication(
     # based on the poco spec: http://portablecontacts.net/draft-spec.html#anchor11
     [('/poco/?', AllHandler),
-     # quote the @s :/
+     # quote the @s :/ but only in python 2.5, not in 2.7...?
      ('/poco/%40me/%40all/?', AllHandler),
      ('/poco/%40me/%40all/([0-9]+)/?', UserIdHandler),
      ('/poco/%40me/%40self/?', SelfHandler),

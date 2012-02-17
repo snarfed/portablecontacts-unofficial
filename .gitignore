@@ -2,4 +2,6 @@ datastore.dat
 oauth_client_secret
 plus-dogfood.json
 private_notes
+facebook_app_secret
+facebook_app_secret_local
 twitter_app_secret

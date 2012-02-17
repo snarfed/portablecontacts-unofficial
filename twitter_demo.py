@@ -10,7 +10,6 @@ import logging
 import urllib
 from webob import exc
 
-import app
 import appengine_config
 import tweepy
 
@@ -53,7 +52,7 @@ class StartAuthHandler(webapp.RequestHandler):
     self.redirect(auth_url)
 
 
-class CallbackHandler(app.TemplateHandler):
+class CallbackHandler(webapp.RequestHandler):
   """The OAuth callback. Fetches an access token and redirects to the front page.
   """
 

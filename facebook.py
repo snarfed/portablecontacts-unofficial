@@ -1,6 +1,8 @@
 #!/usr/bin/python
 """Facebook source class.
 
+STATE: injecting access_token in urlfetch() here
+
 NOTE:
 eventually fb will turn phone and address back on. when they do, add scopes:
 user_mobile_phone, user_address to get them. (same with IM addresses, but i
@@ -17,7 +19,22 @@ import collections
 import datetime
 import json
 
+import appengine_config
 import source
+
+OAUTH_SCOPES = ','.join((
+    'email',
+    'user_about_me',
+    'user_birthday',
+    'user_education_history',
+    'user_location',
+    'user_notes',
+    'user_website',
+    'user_work_history',
+    # see comment in file docstring
+    # 'user_address',
+    # 'user_mobile_phone',
+    ))
 
 API_FRIENDS_URL = 'https://graph.facebook.com/%s'
 API_USERS_URL = 'https://graph.facebook.com/%s'
@@ -28,7 +45,20 @@ class Facebook(source.Source):
   """Implements the PortableContacts API for Facebook.
   """
 
+  FRONT_PAGE_TEMPLATE = 'templates/facebook_index.html'
   DOMAIN = 'facebook.com'
+  # facebook api url templates. can't (easily) use urllib.urlencode() because i
+  # want to keep the %(...)s placeholders as is and fill them in later in code.
+  AUTH_URL = '&'.join((
+      ('http://localhost:8000/dialog/oauth/?'
+       if appengine_config.MOCKFACEBOOK else
+       'https://www.facebook.com/dialog/oauth/?'),
+      'scope=%s' % OAUTH_SCOPES,
+      'client_id=%s' % appengine_config.FACEBOOK_APP_ID,
+      'redirect_uri=http://%s/' % appengine_config.HOST,
+      'response_type=token',
+      # 'state=%(state)s',
+      ))
 
   def get_contacts(self, user_id=None):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
@@ -58,13 +88,14 @@ class Facebook(source.Source):
     """
     return 'me'
 
-  # def urlfetch(self, *args, **kwargs):
-  #   """Wraps Source.urlfetch() and passes through the access_token query param.
-  #   """
-  #   if 'ac' in self.handler.request.headers:
-  #     kwargs['headers'] = {'Authorization':
-  #                            self.handler.request.headers['Authorization']}
-  #   return super(Twitter, self).urlfetch(*args, **kwargs)
+  def urlfetch(self, url, **kwargs):
+    """Wraps Source.urlfetch() and passes through the access_token query param.
+    """
+    access_token = self.handler.request.get('access_token')
+    if access_token:
+      parsed = tuple(urlparse.urlparse(url))
+      kwargs['headers'] = access_token
+    return super(Facebook, self).urlfetch(url, **kwargs)
 
   def to_poco(self, fb):
     """Converts a Facebook user to a PoCo contact.

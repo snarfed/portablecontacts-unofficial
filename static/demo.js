@@ -1,7 +1,9 @@
 /*
- * Minor Javascript utilities for the demo form on the front page.
+ * Minor utilities for the demo form on the front page.
  */
+
 var USER_ID_BLURB = 'user id (optional)';
+var ACCESS_TOKEN_RE = new RegExp('access_token=([^&]+)');
 
 function get_demo_url() {
   var all_or_self = document.getElementById('all_or_self').value;
@@ -36,4 +38,13 @@ function update_userid_field() {
       userid_elem.style.color = 'black';
     }
   }
+}
+
+/* Only used for Facebook's client side OAuth flow, which returns the access
+ * token in the URL fragment.
+ */
+function access_token_from_fragment() {
+  var match = window.location.hash.match(ACCESS_TOKEN_RE);
+  if (match)
+    document.getElementById('access_token').value = match[1];
 }

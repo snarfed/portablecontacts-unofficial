@@ -35,6 +35,7 @@ BASE_HEADERS = {
 BASE_TEMPLATE_VARS = {
   'domain': poco.SOURCE.DOMAIN,
   'host': appengine_config.HOST,
+  'auth_url': poco.SOURCE.AUTH_URL,
   }
 
 
@@ -70,7 +71,7 @@ class TemplateHandler(webapp.RequestHandler):
 class FrontPageHandler(TemplateHandler):
   """Renders and serves /, ie the front page.
   """
-  template_file = 'templates/index.html'
+  template_file = poco.SOURCE.FRONT_PAGE_TEMPLATE
 
 
 class HostMetaXrdHandler(TemplateHandler):
