@@ -86,8 +86,9 @@ class Twitter(source.Source):
                                  appengine_config.TWITTER_APP_SECRET)
       auth.set_access_token(access_token_key, access_token_secret)
       method = kwargs.get('method', 'GET')
+      headers = kwargs.setdefault('headers', {})
       auth.apply_auth(url, method, headers, {})
-      logging.info('Populated Authorization header: %s',
+      logging.info('Populated Authorization header from access token: %s',
                    headers.get('Authorization'))
 
     return super(Twitter, self).urlfetch(url, **kwargs)

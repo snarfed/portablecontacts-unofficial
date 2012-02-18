@@ -1,8 +1,6 @@
 #!/usr/bin/python
 """Facebook source class.
 
-STATE: unit tests for new fb stuff, e.g. passing through access_token
-
 NOTE:
 eventually fb will turn phone and address back on. when they do, add scopes:
 user_mobile_phone, user_address to get them. (same with IM addresses, but i
