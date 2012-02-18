@@ -37,9 +37,29 @@ OAUTH_SCOPES = ','.join((
     # 'user_mobile_phone',
     ))
 
-API_FRIENDS_URL = 'https://graph.facebook.com/%s'
-API_USERS_URL = 'https://graph.facebook.com/%s'
-API_ACCOUNT_URL = 'https://graph.facebook.com/%s'
+API_URL = 'https://graph.facebook.com/'
+API_USER_URL = 'https://graph.facebook.com/%s'
+
+# a single batch graph API request that returns all details for the current
+# user's friends. the first embedded request gets the current user's list of
+# friends; the second gets their details, using JSONPath syntax to depend on the
+# first.
+#
+# copied from
+# https://developers.facebook.com/docs/reference/api/batch/#operations 
+#
+# also note that the docs only discuss including the access token inside the
+# batch JSON value, but including it in the query parameter of the POST URL
+# works fine too.
+# See "Specifying different access tokens for different operations" in
+# https://developers.facebook.com/docs/reference/api/batch/#operations
+API_FRIENDS_POST_DATA = urllib.urlencode(
+  {'batch': json.dumps([
+      # TODO: remove limit
+      {'method': 'GET', 'name': 'friends', 'relative_url': 'me/friends?limit=5'},
+      {'method': 'GET', 'relative_url': '?ids={result=friends:$.data.*.id}'},
+      ]),
+   })
 
 
 class Facebook(source.Source):
@@ -48,8 +68,6 @@ class Facebook(source.Source):
 
   FRONT_PAGE_TEMPLATE = 'templates/facebook_index.html'
   DOMAIN = 'facebook.com'
-  # facebook api url templates. can't (easily) use urllib.urlencode() because i
-  # want to keep the %(...)s placeholders as is and fill them in later in code.
   AUTH_URL = '&'.join((
       ('http://localhost:8000/dialog/oauth/?'
        if appengine_config.MOCKFACEBOOK else
@@ -58,7 +76,6 @@ class Facebook(source.Source):
       'client_id=%s' % appengine_config.FACEBOOK_APP_ID,
       'redirect_uri=http://%s/' % appengine_config.HOST,
       'response_type=token',
-      # 'state=%(state)s',
       ))
 
   def get_contacts(self, user_id=None):
@@ -72,20 +89,19 @@ class Facebook(source.Source):
     """
     # TODO: handle cursors and repeat to get all users
     if user_id is not None:
-      ids = [user_id]
+      resp = self.urlfetch(API_USER_URL % user_id)
+      friends = [json.loads(resp)]
     else:
-      resp = self.urlfetch(API_FRIENDS_URL % self.get_current_user_id())
-      ids = json.loads(resp)['ids']
+      resp = self.urlfetch(API_URL, payload=API_FRIENDS_POST_DATA, method='POST')
+      # the first element of this response is the response to the first request
+      # in the batch, which will be null since the second depended on it and
+      # facebook omits responses to dependency requests.
+      friends = json.loads(json.loads(resp)[1]['body']).values()
 
-    if not ids:
-      return []
+    return [self.to_poco(user) for user in friends]
 
-    ids_str = ','.join(str(id) for id in ids)
-    resp = self.urlfetch(API_USERS_URL % ids_str)
-    return [self.to_poco(user) for user in [json.loads(resp)]]
-
-  def get_current_user_id(self):
-    """Returns the currently authenticated username/user id.
+  def get_current_user(self):
+    """Returns 'me', which Facebook interprets as the current user.
     """
     return 'me'
 
@@ -115,10 +131,12 @@ class Facebook(source.Source):
     pc['connected'] = True
     pc['relationships'] = ['friend']
 
+    pc['accounts'] = [{'domain': self.DOMAIN}]
+
     # fb should always have 'id'
     if 'id' in fb:
       pc['id'] = fb['id']
-      pc['accounts'] = [{'domain': self.DOMAIN, 'userid': fb['id']}]
+      pc['accounts'][0]['userid'] = fb['id']
 
     if 'username' in fb:
       pc['accounts'][0]['username'] = fb['username']
