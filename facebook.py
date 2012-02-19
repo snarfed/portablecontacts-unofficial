@@ -46,7 +46,7 @@ API_USER_URL = 'https://graph.facebook.com/%s'
 # first.
 #
 # copied from
-# https://developers.facebook.com/docs/reference/api/batch/#operations 
+# https://developers.facebook.com/docs/reference/api/batch/#operations
 #
 # also note that the docs only discuss including the access token inside the
 # batch JSON value, but including it in the query parameter of the POST URL
@@ -93,9 +93,15 @@ class Facebook(source.Source):
       friends = [json.loads(resp)]
     else:
       resp = self.urlfetch(API_URL, payload=API_FRIENDS_POST_DATA, method='POST')
-      # the first element of this response is the response to the first request
-      # in the batch, which will be null since the second depended on it and
-      # facebook omits responses to dependency requests.
+      # the batch response is a list of responses to the individual batch
+      # requests, e.g.
+      #
+      # [null, {'body': "{'1': {...}, '2': {...}}"}]
+      #
+      # details: https://developers.facebook.com/docs/reference/api/batch/
+      #
+      # the first response will be null since the second depends on it
+      # and facebook omits responses to dependency requests.
       friends = json.loads(json.loads(resp)[1]['body']).values()
 
     return [self.to_poco(user) for user in friends]

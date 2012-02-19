@@ -16,73 +16,64 @@ class FacebookTest(testutil.HandlerTest):
     super(FacebookTest, self).setUp()
     self.facebook = facebook.Facebook(self.handler)
 
-  # def test_get_contacts(self):
-  #   self.expect_urlfetch(
-  #     'https://graph.facebook.com/me/friends',
-  #     json.dumps({'data': [{'id': '123'}, {'id': '456'}]}))
-  #   self.expect_urlfetch(
-  #     'https://graph.facebook.com/friends/ids.json?user_id=9',
-  #     '{"ids": [123, 456]}')
-  #   self.expect_urlfetch(
-  #     'https://graph.facebook.com/users/lookup.json?user_id=123,456',
-  #     json.dumps([{
-  #         'id': 123,
-  #         'screen_name': 'foo',
-  #         'name': 'Mr. Foo',
-  #         'location': 'Hometown',
-  #         'url': 'http://foo.com/',
-  #         'profile_image_url': 'http://foo.com/pic.jpg',
-  #         }, {
-  #         'id': 456,
-  #         'name': 'Ms. Bar',
-  #         }]))
-  #   self.mox.ReplayAll()
-
-  #   self.assert_equals([{
-  #         'id': '123',
-  #         'displayName': 'Mr. Foo',
-  #         'name': {'formatted': 'Mr. Foo'},
-  #         'accounts': [{'domain': 'twitter.com',
-  #                       'userid': '123',
-  #                       'username': 'foo'}],
-  #         'addresses': [{'formatted': 'Hometown', 'type': 'home'}],
-  #         'photos': [{'value': 'http://foo.com/pic.jpg', 'primary': 'true'}],
-  #         'urls': [{'value': 'http://foo.com/', 'type': 'home'}],
-  #         }, {
-  #         'id': '456',
-  #         'displayName': 'Ms. Bar',
-  #         'name': {'formatted': 'Ms. Bar'},
-  #         'accounts': [{'domain': 'twitter.com', 'userid': '456'}],
-  #         }],
-  #     self.twitter.get_contacts())
-
-  # def test_get_contacts_user_id(self):
-  #   self.expect_urlfetch(
-  #     'https://graph.facebook.com/users/lookup.json?user_id=123',
-  #     '[]')
-  #   self.mox.ReplayAll()
-  #   self.assert_equals([], self.twitter.get_contacts(user_id=123))
-
-  def test_get_contacts_passes_through_auth_header(self):
-    self.expect_urlfetch(
-      'https://graph.facebook.com/account/verify_credentials.json',
-      '{"id": 9}',
-      headers={'Authorization': 'insert oauth here'})
-    self.expect_urlfetch(
-      'https://graph.facebook.com/friends/ids.json?user_id=9',
-      '{"ids": []}',
-      headers={'Authorization': 'insert oauth here'})
+  def test_get_contacts(self):
+    batch_resp = json.dumps(
+      [None,
+       {'body': json.dumps({
+              '1': {'id': '1',
+                    'name': 'Mr. Foo',
+                    'link': 'https://www.facebook.com/mr_foo',
+                    },
+              '2': {'username': 'msbar',
+                    'name': 'Ms. Bar',
+                    'location': {'name': 'Hometown'},
+                    },
+              })}])
+    self.expect_urlfetch('https://graph.facebook.com/',
+                         batch_resp,
+                         method='POST',
+                         payload=facebook.API_FRIENDS_POST_DATA)
     self.mox.ReplayAll()
 
-    self.handler.request.headers['Authorization'] = 'insert oauth here'
-    self.assert_equals([], self.twitter.get_contacts())
+    self.assert_equals([{
+          'id': '1',
+          'displayName': 'Mr. Foo',
+          'name': {'formatted': 'Mr. Foo'},
+          'accounts': [{'domain': 'facebook.com', 'userid': '1'}],
+          'connected': True,
+          'relationships': ['friend'],
+          }, {
+          'displayName': 'Ms. Bar',
+          'name': {'formatted': 'Ms. Bar'},
+          'accounts': [{'domain': 'facebook.com', 'username': 'msbar'}],
+          'addresses': [{'formatted': 'Hometown', 'type': 'home'}],
+          'connected': True,
+          'relationships': ['friend'],
+          }],
+      self.facebook.get_contacts())
 
-  # def test_get_current_user_id(self):
-  #   self.expect_urlfetch(
-  #     'https://graph.facebook.com/account/verify_credentials.json',
-  #     '{"id": 9}')
-  #   self.mox.ReplayAll()
-  #   self.assert_equals(9, self.twitter.get_current_user_id())
+  def test_get_contacts_user_id(self):
+    self.expect_urlfetch('https://graph.facebook.com/123', '{}')
+    self.mox.ReplayAll()
+    self.assert_equals([], self.facebook.get_contacts(user_id=123))
+
+  def test_get_contacts_user_id_passes_through_access_token(self):
+    self.setUpHandler(environ={'QUERY_STRING': 'access_token=asdf'})
+    self.expect_urlfetch('https://graph.facebook.com/123?access_token=asdf',
+                         '{"id": 123}')
+    self.mox.ReplayAll()
+    self.facebook = facebook.Facebook(self.handler)
+    self.facebook.get_contacts(user_id=123)
+
+  def test_get_all_contacts_passes_through_access_token(self):
+    self.setUpHandler(environ={'QUERY_STRING': 'access_token=asdf'})
+    self.expect_urlfetch('https://graph.facebook.com/?access_token=asdf',
+                         '[null, {"body": "{}"}]',
+                         method='POST',
+                         payload=facebook.API_FRIENDS_POST_DATA)
+    self.mox.ReplayAll()
+    self.facebook = facebook.Facebook(self.handler)
+    self.facebook.get_contacts()
 
   def test_to_poco_id_only(self):
     self.assert_equals({
@@ -92,6 +83,14 @@ class FacebookTest(testutil.HandlerTest):
         'relationships': ['friend'],
         },
       self.facebook.to_poco({'id': '212038'}))
+
+  def test_to_poco_username_only(self):
+    self.assert_equals({
+        'accounts': [{'domain': 'facebook.com', 'username': 'foo'}],
+        'connected': True,
+        'relationships': ['friend'],
+        },
+      self.facebook.to_poco({'username': 'foo'}))
 
   def test_to_poco_minimal(self):
     self.assert_equals({
