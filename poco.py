@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """PortableContacts API handler classes.
 
+STATE: paging, then xml?
 TODO: xml
 """
 
@@ -42,6 +43,8 @@ class BaseHandler(webapp.RequestHandler):
     """Args:
       contacts: list of PoCo contact dicts
     """
+    format = self.request.get('format', 'json')
+
     self.response.headers['Content-Type'] = 'application/json'
     self.response.out.write(json.dumps({
         'startIndex': 0,
@@ -50,6 +53,7 @@ class BaseHandler(webapp.RequestHandler):
         'entry': contacts,
         },
         indent=2))  # pretty-print
+
 
 class AllHandler(BaseHandler):
   """Returns all contacts.
