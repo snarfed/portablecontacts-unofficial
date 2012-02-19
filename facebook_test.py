@@ -42,6 +42,7 @@ class FacebookTest(testutil.HandlerTest):
           'accounts': [{'domain': 'facebook.com', 'userid': '1'}],
           'connected': True,
           'relationships': ['friend'],
+          'photos': [{'value': 'http://graph.facebook.com/1/picture?type=large'}],
           }, {
           'displayName': 'Ms. Bar',
           'name': {'formatted': 'Ms. Bar'},
@@ -49,6 +50,7 @@ class FacebookTest(testutil.HandlerTest):
           'addresses': [{'formatted': 'Hometown', 'type': 'home'}],
           'connected': True,
           'relationships': ['friend'],
+          'photos': [{'value': 'http://graph.facebook.com/msbar/picture?type=large'}],
           }],
       self.facebook.get_contacts())
 
@@ -81,6 +83,7 @@ class FacebookTest(testutil.HandlerTest):
         'accounts': [{'domain': 'facebook.com', 'userid': '212038'}],
         'connected': True,
         'relationships': ['friend'],
+        'photos': [{'value': 'http://graph.facebook.com/212038/picture?type=large'}],
         },
       self.facebook.to_poco({'id': '212038'}))
 
@@ -89,6 +92,7 @@ class FacebookTest(testutil.HandlerTest):
         'accounts': [{'domain': 'facebook.com', 'username': 'foo'}],
         'connected': True,
         'relationships': ['friend'],
+        'photos': [{'value': 'http://graph.facebook.com/foo/picture?type=large'}],
         },
       self.facebook.to_poco({'username': 'foo'}))
 
@@ -103,6 +107,7 @@ class FacebookTest(testutil.HandlerTest):
                        }],
         'connected': True,
         'relationships': ['friend'],
+        'photos': [{'value': 'http://graph.facebook.com/212038/picture?type=large'}],
         },
       self.facebook.to_poco({
         'id': '212038',
@@ -140,10 +145,6 @@ class FacebookTest(testutil.HandlerTest):
         'urls': [{'value': 'http://snarfed.org/',
                   'type': 'home',
                   }],
-        # TODO (redirect)
-        # 'photos': [{'value': 'http://sample.site.org/photos/12345.jpg',
-        #             'type': 'thumbnail'
-        #             }],
         'organizations': [
           {'name': 'Google', 'type': 'job', 'title': 'Software Engineer',
            'startDate': '2002-01', 'endDate': '2010-01'},
@@ -156,6 +157,7 @@ class FacebookTest(testutil.HandlerTest):
         'connected': True,
         'relationships': ['friend'],
         'note': 'something about me',
+        'photos': [{'value': 'http://graph.facebook.com/212038/picture?type=large'}],
         },
       self.facebook.to_poco({
           'id': '212038',

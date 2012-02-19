@@ -226,4 +226,11 @@ class Facebook(source.Source):
     if 'bio' in fb:
       pc['note'] = fb['bio']
 
+    # profile picture. facebook graph api provides a url that 302 redirects and
+    # takes either id or username.
+    handle = fb.get('id', fb.get('username'))
+    if handle:
+      url = 'http://graph.facebook.com/%s/picture?type=large' % handle
+      pc['photos'] = [{'value': url}]
+
     return dict(pc)
