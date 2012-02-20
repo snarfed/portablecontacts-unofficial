@@ -134,6 +134,8 @@ class Facebook(source.Source):
     pc = collections.defaultdict(dict)
 
     # facebook friend relationships are always bidirectional
+    # TODO: remove this (or replace with something like "self"?) for the current
+    # user's contact
     pc['connected'] = True
     pc['relationships'] = ['friend']
 

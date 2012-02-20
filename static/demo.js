@@ -55,6 +55,7 @@ function render_form() {
   })
 
   document.getElementById('url').innerHTML = url;
+  document.getElementById('demo').action = url;
 }
                    
 
