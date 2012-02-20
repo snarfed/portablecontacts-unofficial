@@ -7,6 +7,8 @@ STATE: testing xml
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
+import mox
+from webob import exc
 
 import poco
 import source
@@ -35,7 +37,7 @@ class HandlersTest(testutil.HandlerTest):
     self.assertEquals(200, resp.status_int)
     self.assert_equals({
         'startIndex': 0,
-        'itemsPerPage': 10,
+        'itemsPerPage': 3,
         'totalResults': len(expected_contacts),
         'entry': expected_contacts,
         },
@@ -67,7 +69,7 @@ class HandlersTest(testutil.HandlerTest):
 <response>
 <totalResults>3</totalResults>
 <startIndex>0</startIndex>
-<itemsPerPage>10</itemsPerPage>
+<itemsPerPage>3</itemsPerPage>
 <entry>
 <displayName>me</displayName>
 <id>2</id>
@@ -81,6 +83,20 @@ class HandlersTest(testutil.HandlerTest):
 </entry>
 </response>
 """, resp.body)
+
+  def test_pass_through_start_index_and_count(self):
+    self.mox.StubOutWithMock(poco.SOURCE, 'get_contacts')
+    poco.SOURCE.get_contacts(None, startIndex=2, count=4).AndReturn([])
+    self.mox.ReplayAll()
+    self.application.get_response('/poco/@me/@all/?startIndex=2&count=4')
+
+  def test_bad_start_index(self):
+    resp = self.application.get_response('/poco/@me/@all/?startIndex=foo')
+    self.assertEquals(400, resp.status_int)
+
+  def test_bad_count(self):
+    resp = self.application.get_response('/poco/@me/@all/?count=-1')
+    self.assertEquals(400, resp.status_int)
 
   def test_unknown_format(self):
     resp = self.application.get_response('/poco/@me/@all/?format=bad')

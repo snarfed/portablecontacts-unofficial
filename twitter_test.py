@@ -139,3 +139,35 @@ class TwitterTest(testutil.HandlerTest):
           'url': 'http://snarfed.org/',
           'utc_offset': -28800,
           }))
+
+  def _test_paging(self, ids, **get_contacts_kwargs):
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/account/verify_credentials.json',
+      '{"id": 0}')
+    self.expect_urlfetch(
+      'https://api.twitter.com/1/friends/ids.json?user_id=0',
+      '{"ids": [1, 2, 3]} ')
+    if ids:
+      ids_str = ','.join(str(id) for id in ids)
+      self.expect_urlfetch(
+        'https://api.twitter.com/1/users/lookup.json?user_id=%s' % ids_str,
+        json.dumps([{'id': id} for id in ids]))
+    self.mox.ReplayAll()
+
+    self.assert_equals(
+      [{'id': str(id), 'accounts': [{'domain': 'twitter.com', 'userid': str(id)}]}
+       for id in ids],
+      self.twitter.get_contacts(**get_contacts_kwargs))
+
+  def test_start_index(self):
+    self._test_paging([2, 3], startIndex=1)
+
+  def test_start_index_at_end(self):
+    self._test_paging([], startIndex=3)
+
+  def test_count(self):
+    self._test_paging([1, 2], count=2)
+
+  def test_start_index_and_count(self):
+    self._test_paging([2], startIndex=1, count=1)
+

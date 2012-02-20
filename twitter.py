@@ -1,6 +1,8 @@
 #!/usr/bin/python
 """Twitter source class.
 
+Uses the REST API: https://dev.twitter.com/docs/api
+
 snarfed_org user id: 139199211
 
 Python code to pretty-print JSON response from Twitter REST API:
@@ -35,11 +37,12 @@ class Twitter(source.Source):
   """Implements the PortableContacts API for Twitter.
   """
 
-  FRONT_PAGE_TEMPLATE = 'templates/twitter_index.html'
   DOMAIN = 'twitter.com'
+  ITEMS_PER_PAGE = 100
+  FRONT_PAGE_TEMPLATE = 'templates/twitter_index.html'
   AUTH_URL = '/start_auth'
 
-  def get_contacts(self, user_id=None):
+  def get_contacts(self, user_id=None, startIndex=0, count=0):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
 
     The OAuth 'Authorization' header must be provided if the current user is
@@ -47,13 +50,18 @@ class Twitter(source.Source):
 
     Args:
       user_id: integer or string. if provided, only this user will be returned.
+      startIndex: int >= 0
+      count: int >= 0
     """
-    # TODO: handle cursors and repeat to get all users
     if user_id is not None:
       ids = [user_id]
     else:
       resp = self.urlfetch(API_FRIENDS_URL % self.get_current_user())
-      ids = json.loads(resp)['ids']
+      if count == 0:
+        end = self.ITEMS_PER_PAGE - startIndex
+      else:
+        end = startIndex + count
+      ids = json.loads(resp)['ids'][startIndex:end]
 
     if not ids:
       return []
@@ -102,7 +110,7 @@ class Twitter(source.Source):
     pc = collections.defaultdict(dict)
     pc['accounts'] = [{'domain': self.DOMAIN}]
 
-    # tw should always have 'id'
+    # tw should always have 'id' (it's an int)
     if 'id' in tw:
       pc['id'] = str(tw['id'])
       pc['accounts'][0]['userid'] = str(tw['id'])

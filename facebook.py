@@ -78,7 +78,7 @@ class Facebook(source.Source):
       'response_type=token',
       ))
 
-  def get_contacts(self, user_id=None):
+  def get_contacts(self, user_id=None, startIndex=0, count=0):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
 
     The OAuth 'Authorization' header must be provided if the current user is
@@ -86,6 +86,8 @@ class Facebook(source.Source):
 
     Args:
       user_id: integer or string. if provided, only this user will be returned.
+      startIndex: int >= 0
+      count: int >= 0
     """
     # TODO: handle cursors and repeat to get all users
     if user_id is not None:

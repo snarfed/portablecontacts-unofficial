@@ -11,10 +11,11 @@ import testutil
 
 
 class FakeSource(source.Source):
+  ITEMS_PER_PAGE = 3
   contacts = None
   user_id = 0
 
-  def get_contacts(self, user_id=None):
+  def get_contacts(self, user_id=None, startIndex=0, count=0):
     if user_id:
       return [c for c in self.contacts if c['id'] == user_id]
     else:

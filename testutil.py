@@ -69,8 +69,12 @@ class HandlerTest(mox.MoxTestBase):
     try:
       self._assert_equals(expected, actual)
     except AssertionError, e:
-      raise AssertionError(''.join(e.args) + '\nActual value:\n' +
-                           pprint.pformat(actual))
+      raise AssertionError("""\
+%s
+Expected value: %s
+Actual value:   %s""" % (''.join(e.args),
+                         pprint.pformat(expected),
+                         pprint.pformat(actual)))
 
   def _assert_equals(self, expected, actual):
     """Recursive helper for assert_equals().

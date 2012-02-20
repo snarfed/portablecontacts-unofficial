@@ -1,10 +1,7 @@
 #!/usr/bin/python
 """PortableContacts API handler classes.
 
-STATE: built in webapp doesn't have exception handler. (WSGIApplication doesn't
-have error_handlers attr.) bring in webapp2 which does.
-then finish xml tests, then paging, etc.
-TODO: xml
+STATE: paging, etc.
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
@@ -47,12 +44,25 @@ class BaseHandler(webapp2.RequestHandler):
     super(BaseHandler, self).__init__(*args, **kwargs)
     self.source = SOURCE(self)
 
-  def make_response(self, contacts):
+  def get(self, user_id=None):
     """Args:
       contacts: list of PoCo contact dicts
     """
-    response = {'startIndex': 0,
-                'itemsPerPage': 10,
+    kwargs = {}
+    for param in 'startIndex', 'count':
+      val = self.request.get(param, 0)
+      try:
+        val = int(val)
+        assert val >= 0
+        kwargs[param] = val
+      except (ValueError, AssertionError):
+        raise exc.HTTPBadRequest('Invalid %s: %s (should be positive int)' %
+                                 (param, val))
+
+    contacts = self.source.get_contacts(user_id, **kwargs)
+
+    response = {'startIndex': kwargs['startIndex'],
+                'itemsPerPage': self.source.ITEMS_PER_PAGE,
                 'totalResults': len(contacts),
                 'entry': contacts,
                 }
@@ -73,22 +83,21 @@ class AllHandler(BaseHandler):
   """Returns all contacts.
   """
   def get(self):
-    self.make_response(self.source.get_contacts())
+    super(AllHandler, self).get()
 
 
 class SelfHandler(BaseHandler):
   """Returns the currently authenticated user's contact.
   """
   def get(self):
-    self.make_response(self.source.get_contacts(
-        user_id=self.source.get_current_user()))
+    super(SelfHandler, self).get(user_id=self.source.get_current_user())
 
 
 class UserIdHandler(BaseHandler):
   """Returns a single user's contact.
   """
   def get(self, user_id):
-    self.make_response(self.source.get_contacts(user_id=int(user_id)))
+    super(UserIdHandler, self).get(user_id=int(user_id))
 
 
 application = webapp2.WSGIApplication(
