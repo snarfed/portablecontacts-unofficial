@@ -53,21 +53,20 @@ API_USER_URL = 'https://graph.facebook.com/%s'
 # works fine too.
 # See "Specifying different access tokens for different operations" in
 # https://developers.facebook.com/docs/reference/api/batch/#operations
-API_FRIENDS_POST_DATA = urllib.urlencode(
-  {'batch': json.dumps([
-      # TODO: remove limit
-      {'method': 'GET', 'name': 'friends', 'relative_url': 'me/friends?limit=5'},
-      {'method': 'GET', 'relative_url': '?ids={result=friends:$.data.*.id}'},
-      ]),
-   })
+API_FRIENDS_BATCH_REQUESTS = json.dumps([
+    {'method': 'GET', 'name': 'friends', 'relative_url':
+       'me/friends?offset=%(offset)d&limit=%(limit)d'},
+    {'method': 'GET', 'relative_url': '?ids={result=friends:$.data.*.id}'},
+    ])
 
 
 class Facebook(source.Source):
   """Implements the PortableContacts API for Facebook.
   """
 
-  FRONT_PAGE_TEMPLATE = 'templates/facebook_index.html'
   DOMAIN = 'facebook.com'
+  ITEMS_PER_PAGE = 100
+  FRONT_PAGE_TEMPLATE = 'templates/facebook_index.html'
   AUTH_URL = '&'.join((
       ('http://localhost:8000/dialog/oauth/?'
        if appengine_config.MOCKFACEBOOK else
@@ -89,12 +88,13 @@ class Facebook(source.Source):
       startIndex: int >= 0
       count: int >= 0
     """
-    # TODO: handle cursors and repeat to get all users
     if user_id is not None:
       resp = self.urlfetch(API_USER_URL % user_id)
       friends = [json.loads(resp)]
     else:
-      resp = self.urlfetch(API_URL, payload=API_FRIENDS_POST_DATA, method='POST')
+      batch = urllib.urlencode({'batch': API_FRIENDS_BATCH_REQUESTS %
+                                {'offset': startIndex, 'limit': count}})
+      resp = self.urlfetch(API_URL, payload=batch, method='POST')
       # the batch response is a list of responses to the individual batch
       # requests, e.g.
       #

@@ -5,10 +5,15 @@
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
+import urllib
 import webapp2
 
 import facebook
 import testutil
+
+DEFAULT_BATCH_REQUEST = urllib.urlencode(
+  {'batch': facebook.API_FRIENDS_BATCH_REQUESTS % {'offset': 0, 'limit': 0}})
+
 
 class FacebookTest(testutil.HandlerTest):
 
@@ -32,7 +37,7 @@ class FacebookTest(testutil.HandlerTest):
     self.expect_urlfetch('https://graph.facebook.com/',
                          batch_resp,
                          method='POST',
-                         payload=facebook.API_FRIENDS_POST_DATA)
+                         payload=DEFAULT_BATCH_REQUEST)
     self.mox.ReplayAll()
 
     self.assert_equals([{
@@ -73,7 +78,7 @@ class FacebookTest(testutil.HandlerTest):
     self.expect_urlfetch('https://graph.facebook.com/?access_token=asdf',
                          '[null, {"body": "{}"}]',
                          method='POST',
-                         payload=facebook.API_FRIENDS_POST_DATA)
+                         payload=DEFAULT_BATCH_REQUEST)
     self.mox.ReplayAll()
 
     handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),
@@ -215,3 +220,13 @@ class FacebookTest(testutil.HandlerTest):
           'updated_time': '2012-01-06T02:11:04+0000',
           'bio': 'something about me',
           }))
+
+  def test_paging(self):
+    self.expect_urlfetch(
+      'https://graph.facebook.com/',
+      '[null, {"body": "{}"}]',
+      payload=urllib.urlencode({'batch': facebook.API_FRIENDS_BATCH_REQUESTS %
+                                {'offset': 2, 'limit': 4}}),
+      method='POST')
+    self.mox.ReplayAll()
+    self.facebook.get_contacts(startIndex=2, count=4)
