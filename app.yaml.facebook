@@ -1,3 +1,4 @@
+# -*- yaml -*-
 application: facebook-portablecontacts
 version: 1
 threadsafe: false
@@ -13,10 +14,6 @@ handlers:
 
 - url: /(.well-known/.*)?
   script: app.py
-  secure: always
-
-- url: /oauth_callback
-  script: facebook_demo.py
   secure: always
 
 - url: /poco(/.*)?

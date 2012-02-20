@@ -32,6 +32,12 @@ class ToXmlTest(unittest.TestCase):
 """
 , util.to_xml({'a': ''}))
 
+  def test_zero(self):
+    self.assertEqual("""
+<a>0</a>
+"""
+, util.to_xml({'a': 0}))
+
   def test_list(self):
     self.assertEqual("""
 <a>1</a>

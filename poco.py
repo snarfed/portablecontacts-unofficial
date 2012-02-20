@@ -1,7 +1,9 @@
 #!/usr/bin/python
 """PortableContacts API handler classes.
 
-STATE: paging, then xml?
+STATE: built in webapp doesn't have exception handler. (WSGIApplication doesn't
+have error_handlers attr.) bring in webapp2 which does.
+then finish xml tests, then paging, etc.
 TODO: xml
 """
 
@@ -10,10 +12,12 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 import json
 import logging
 import os
+from webob import exc
 
 import appengine_config
 import facebook
 import twitter
+import util
 
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -24,6 +28,10 @@ SOURCE = {
   'twitter-portablecontacts': twitter.Twitter,
   }.get(appengine_config.APP_ID)
 
+XML_TEMPLATE = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<response>%s</response>
+"""
 
 class BaseHandler(webapp.RequestHandler):
   """Base class for PortableContacts API handlers.
@@ -43,16 +51,24 @@ class BaseHandler(webapp.RequestHandler):
     """Args:
       contacts: list of PoCo contact dicts
     """
-    format = self.request.get('format', 'json')
+    response = {'startIndex': 0,
+                'itemsPerPage': 10,
+                'totalResults': len(contacts),
+                'entry': contacts,
+                }
 
-    self.response.headers['Content-Type'] = 'application/json'
-    self.response.out.write(json.dumps({
-        'startIndex': 0,
-        'itemsPerPage': 10,
-        'totalResults': len(contacts),
-        'entry': contacts,
-        },
-        indent=2))  # pretty-print
+    format = self.request.get('format', 'json')
+    if format == 'json':
+      self.response.headers['Content-Type'] = 'application/json'
+      self.response.out.write(json.dumps(response, indent=2))
+    elif format == 'xml':
+      self.response.headers['Content-Type'] = 'text/xml'
+      self.response.out.write(XML_TEMPLATE % util.to_xml(response))
+    else:
+      self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+      e = exc.HTTPBadRequest('Invalid format: %s (should be json or xml)' %
+                                format)
+      self.response.out.write(str(self.request.get_response(e)).strip())
 
 
 class AllHandler(BaseHandler):

@@ -1,3 +1,4 @@
+# -*- yaml -*-
 application: twitter-portablecontacts
 version: 1
 threadsafe: false

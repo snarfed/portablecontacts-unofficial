@@ -7,6 +7,7 @@ import mox
 import pprint
 import re
 import os
+import urlparse
 import wsgiref
 
 from google.appengine.api import urlfetch
@@ -106,26 +107,24 @@ class HandlerTest(mox.MoxTestBase):
       args = ('[%s] ' % key if key is not None else '') + ''.join(e.args)
       raise AssertionError(args)
 
-  def make_get_request(self, path, expected_status, query_params=None,
-                       headers=None):
+  def make_get_request(self, url, expected_status, headers=None):
     """Makes an internal HTTP request for testing.
 
-    Copied from bridgy/testutil.py.
+    Based on bridgy/testutil.py.
 
     Args:
       method: string, 'GET' or 'POST'
-      path: string, the query URL
+      url: string, the query URL
       expected_status: integer, expected HTTP response status code
-      query_params: dict of string to string, query parameters
       headers: dict of string: string, the HTTP request headers
 
     Returns:
       webapp.Response
     """
     self.environ['REQUEST_METHOD'] = 'GET'
-    self.environ['PATH_INFO'] = path
-    if query_params:
-      self.environ['QUERY_STRING'] = urllib.urlencode(query_params)
+    parsed = urlparse.urlparse(url)
+    self.environ['PATH_INFO'] = parsed.path
+    self.environ['QUERY_STRING'] = parsed.query
 
     if headers:
       datastruct.EnvironHeaders(self.environ).update(headers)

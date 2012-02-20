@@ -1,5 +1,7 @@
 #!/usr/bin/python
 """Unit tests for poco.py.
+
+STATE: testing xml
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
@@ -26,12 +28,22 @@ from google.appengine.ext import webapp
 
 class HandlersTest(testutil.HandlerTest):
 
+  CONTACTS = [
+    {'id': 2, 'displayName': 'me'},
+    {'id': 4},
+    {'id': 2, 'displayName': 'Ryan'}]
+  SELF_CONTACTS = [
+    {'id': 2, 'displayName': 'me'},
+    {'id': 2, 'displayName': 'Ryan'}]
+
   def setUp(self):
     super(HandlersTest, self).setUp(application=poco.application)
     poco.SOURCE = source_test.FakeSource
+    poco.SOURCE.contacts = self.CONTACTS
+    poco.SOURCE.user_id = 2
 
-  def assert_response(self, path, expected_contacts):
-    resp = self.make_get_request(path, 200)
+  def assert_response(self, path, expected_contacts, **kwargs):
+    resp = self.make_get_request(path, 200, **kwargs)
     self.assert_equals({
         'startIndex': 0,
         'itemsPerPage': 10,
@@ -41,31 +53,44 @@ class HandlersTest(testutil.HandlerTest):
       json.loads(resp.out.getvalue()))
 
   def test_all_no_contacts(self):
-    poco.SOURCE.contacts = []
     for url in '/poco', '/poco/', '/poco/@me/@all', '/poco/@me/@all/':
       self.setUp()
+      poco.SOURCE.contacts = []
       self.assert_response(url, [])
 
   def test_all_get_some_contacts(self):
-    poco.SOURCE.contacts = [{'id': 123}, {'id': 456, 'displayName': 'Ryan'}]
-    self.assert_response('/poco/@me/@all/', poco.SOURCE.contacts)
+    self.assert_response('/poco/@me/@all/', self.CONTACTS)
 
   def test_self(self):
-    poco.SOURCE.user_id = 9
-    poco.SOURCE.contacts = [{'id': 9, 'displayName': 'me'},
-                            {'id': 123},
-                            {'id': 9, 'displayName': 'Ryan'},
-                            ]
-    self.assert_response('/poco/@me/@self/',
-                         [{'id': 9, 'displayName': 'me'},
-                          {'id': 9, 'displayName': 'Ryan'}])
+    self.assert_response('/poco/@me/@self/', self.SELF_CONTACTS)
 
   def test_user_id(self):
-    poco.SOURCE.contacts = [{'id': 456, 'displayName': 'other'},
-                            {'id': 123},
-                            {'id': 456, 'displayName': 'Foo'},
-                            ]
-    self.assert_response('/poco/@me/@all/456/',
-                         [{'id': 456, 'displayName': 'other'},
-                          {'id': 456, 'displayName': 'Foo'},
-                          ])
+    self.assert_response('/poco/@me/@all/2/', self.SELF_CONTACTS)
+
+  def test_json_format(self):
+    self.assert_response('/poco/@me/@all/?format=json', self.CONTACTS)
+
+  def test_xml_format(self):
+    resp = self.make_get_request('/poco/@me/@all/?format=xml', 200)
+    self.assertEqual("""\
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+<totalResults>3</totalResults>
+<startIndex>0</startIndex>
+<itemsPerPage>10</itemsPerPage>
+<entry>
+<displayName>me</displayName>
+<id>2</id>
+</entry>
+<entry>
+<id>4</id>
+</entry>
+<entry>
+<displayName>Ryan</displayName>
+<id>2</id>
+</entry>
+</response>
+""", resp.out.getvalue())
+
+  def test_unknown_format(self):
+    self.make_get_request('/poco/@me/@all/?format=bad', 400)
