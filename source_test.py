@@ -42,4 +42,4 @@ class SourceTest(testutil.HandlerTest):
       self.source.urlfetch('http://my/url')
     except exc.HTTPException, e:
       self.assertEquals(408, e.status_int)
-      self.assertEquals('my error', self.response.out.getvalue())
+      self.assertEquals('my error', self.response.body)

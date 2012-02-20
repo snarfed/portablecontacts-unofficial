@@ -12,6 +12,7 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 import json
 import logging
 import os
+import webapp2
 from webob import exc
 
 import appengine_config
@@ -19,7 +20,6 @@ import facebook
 import twitter
 import util
 
-from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 # maps app id to source class
@@ -33,7 +33,7 @@ XML_TEMPLATE = """\
 <response>%s</response>
 """
 
-class BaseHandler(webapp.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):
   """Base class for PortableContacts API handlers.
 
   TODO: implement paging:
@@ -65,10 +65,8 @@ class BaseHandler(webapp.RequestHandler):
       self.response.headers['Content-Type'] = 'text/xml'
       self.response.out.write(XML_TEMPLATE % util.to_xml(response))
     else:
-      self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-      e = exc.HTTPBadRequest('Invalid format: %s (should be json or xml)' %
-                                format)
-      self.response.out.write(str(self.request.get_response(e)).strip())
+      raise exc.HTTPBadRequest('Invalid format: %s (should be json or xml)' %
+                               format)
 
 
 class AllHandler(BaseHandler):
@@ -93,13 +91,12 @@ class UserIdHandler(BaseHandler):
     self.make_response(self.source.get_contacts(user_id=int(user_id)))
 
 
-application = webapp.WSGIApplication(
+application = webapp2.WSGIApplication(
     # based on the poco spec: http://portablecontacts.net/draft-spec.html#anchor11
     [('/poco/?', AllHandler),
-     # quote the @s :/ but only in python 2.5, not in 2.7...?
-     ('/poco/%40me/%40all/?', AllHandler),
-     ('/poco/%40me/%40all/([0-9]+)/?', UserIdHandler),
-     ('/poco/%40me/%40self/?', SelfHandler),
+     ('/poco/@me/@all/?', AllHandler),
+     ('/poco/@me/@all/([0-9]+)/?', UserIdHandler),
+     ('/poco/@me/@self/?', SelfHandler),
      ],
     debug=appengine_config.DEBUG)
 

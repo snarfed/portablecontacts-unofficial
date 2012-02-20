@@ -5,10 +5,10 @@
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
+import webapp2
 
 import facebook
 import testutil
-
 
 class FacebookTest(testutil.HandlerTest):
 
@@ -60,21 +60,25 @@ class FacebookTest(testutil.HandlerTest):
     self.assert_equals([], self.facebook.get_contacts(user_id=123))
 
   def test_get_contacts_user_id_passes_through_access_token(self):
-    self.setUpHandler(environ={'QUERY_STRING': 'access_token=asdf'})
     self.expect_urlfetch('https://graph.facebook.com/123?access_token=asdf',
                          '{"id": 123}')
     self.mox.ReplayAll()
-    self.facebook = facebook.Facebook(self.handler)
+
+    handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),
+                                     webapp2.Response())
+    self.facebook = facebook.Facebook(handler)
     self.facebook.get_contacts(user_id=123)
 
   def test_get_all_contacts_passes_through_access_token(self):
-    self.setUpHandler(environ={'QUERY_STRING': 'access_token=asdf'})
     self.expect_urlfetch('https://graph.facebook.com/?access_token=asdf',
                          '[null, {"body": "{}"}]',
                          method='POST',
                          payload=facebook.API_FRIENDS_POST_DATA)
     self.mox.ReplayAll()
-    self.facebook = facebook.Facebook(self.handler)
+
+    handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),
+                                     webapp2.Response())
+    self.facebook = facebook.Facebook(handler)
     self.facebook.get_contacts()
 
   def test_to_poco_id_only(self):

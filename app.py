@@ -18,11 +18,11 @@ __author__ = 'Ryan Barrett <portablecontacts@ryanb.org>'
 import logging
 import os
 import urlparse
+import webapp2
 
 import appengine_config
 import poco
 
-from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 
@@ -39,7 +39,7 @@ BASE_TEMPLATE_VARS = {
   }
 
 
-class TemplateHandler(webapp.RequestHandler):
+class TemplateHandler(webapp2.RequestHandler):
   """Renders and serves a template based on class attributes.
 
   Subclasses must override at least template_file.
@@ -89,7 +89,7 @@ class HostMetaXrdsHandler(TemplateHandler):
 
 
 def main():
-  application = webapp.WSGIApplication(
+  application = webapp2.WSGIApplication(
       [('/', FrontPageHandler),
        ('/.well-known/host-meta', HostMetaXrdHandler),
        ('/.well-known/host-meta.xrds', HostMetaXrdsHandler),

@@ -8,12 +8,12 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import logging
 import urllib
+import webapp2
 from webob import exc
 
 import appengine_config
 import tweepy
 
-from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 
@@ -27,7 +27,7 @@ class OAuthToken(db.Model):
   token_secret = db.StringProperty(required=True)
 
 
-class StartAuthHandler(webapp.RequestHandler):
+class StartAuthHandler(webapp2.RequestHandler):
   """Starts three-legged OAuth with Twitter.
 
   Fetches an OAuth request token, then redirects to Twitter's auth page to
@@ -52,7 +52,7 @@ class StartAuthHandler(webapp.RequestHandler):
     self.redirect(auth_url)
 
 
-class CallbackHandler(webapp.RequestHandler):
+class CallbackHandler(webapp2.RequestHandler):
   """The OAuth callback. Fetches an access token and redirects to the front page.
   """
 
@@ -87,7 +87,7 @@ class CallbackHandler(webapp.RequestHandler):
 
 
 def main():
-  application = webapp.WSGIApplication(
+  application = webapp2.WSGIApplication(
       [('/start_auth', StartAuthHandler),
        ('/oauth_callback', CallbackHandler),
        ],

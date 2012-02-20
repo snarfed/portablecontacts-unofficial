@@ -10,9 +10,10 @@ import os
 import urlparse
 import wsgiref
 
+import webapp2
+
 from google.appengine.api import urlfetch
 from google.appengine.ext import testbed
-from google.appengine.ext import webapp
 
 
 class HandlerTest(mox.MoxTestBase):
@@ -23,7 +24,7 @@ class HandlerTest(mox.MoxTestBase):
 
   Attributes:
     application: WSGIApplication
-    handler: webapp.RequestHandler
+    handler: webapp2.RequestHandler
   """
 
   class UrlfetchResult(object):
@@ -44,19 +45,9 @@ class HandlerTest(mox.MoxTestBase):
     self.testbed.init_urlfetch_stub()
     self.mox.StubOutWithMock(urlfetch, 'fetch')
 
-    self.setUpHandler()
-
-  def setUpHandler(self, environ=None):
-    self.environ = {}
-    if environ:
-      self.environ.update(environ)
-    wsgiref.util.setup_testing_defaults(self.environ)
-    self.environ['HTTP_HOST'] = 'HOST'
-    self.request = webapp.Request(self.environ)
-    self.response = webapp.Response()
-
-    self.handler = webapp.RequestHandler()
-    self.handler.initialize(self.request, self.response)
+    self.request = webapp2.Request.blank('/')
+    self.response = webapp2.Response()
+    self.handler = webapp2.RequestHandler(self.request, self.response)
 
   def expect_urlfetch(self, expected_url, response, status=200, **kwargs):
     """Stubs out urlfetch.fetch() and sets up an expected call.
@@ -106,35 +97,3 @@ class HandlerTest(mox.MoxTestBase):
       # backwards, all the way up to the root.
       args = ('[%s] ' % key if key is not None else '') + ''.join(e.args)
       raise AssertionError(args)
-
-  def make_get_request(self, url, expected_status, headers=None):
-    """Makes an internal HTTP request for testing.
-
-    Based on bridgy/testutil.py.
-
-    Args:
-      method: string, 'GET' or 'POST'
-      url: string, the query URL
-      expected_status: integer, expected HTTP response status code
-      headers: dict of string: string, the HTTP request headers
-
-    Returns:
-      webapp.Response
-    """
-    self.environ['REQUEST_METHOD'] = 'GET'
-    parsed = urlparse.urlparse(url)
-    self.environ['PATH_INFO'] = parsed.path
-    self.environ['QUERY_STRING'] = parsed.query
-
-    if headers:
-      datastruct.EnvironHeaders(self.environ).update(headers)
-
-    def start_response(status, headers, exc_info=None):
-      assert exc_info is None
-      self.assertTrue(status.startswith(str(expected_status)),
-                      'Expected %s but was %s' % (expected_status, status))
-      self.response.headers = wsgiref.headers.Headers(headers)
-      return self.response.out.write
-
-    self.application(self.environ, start_response)
-    return self.response

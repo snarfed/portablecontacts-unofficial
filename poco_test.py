@@ -7,23 +7,11 @@ STATE: testing xml
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import json
-import webob
 
 import poco
 import source
 import source_test
 import testutil
-
-from google.appengine.ext import webapp
-
-
-# # bleh, ugly. webob.Request url-encodes request paths by default, which converts
-# # @ to %40. we use @ in URL mappings in poco.py, e.g. /poco/@me/@all/, which
-# # don't match %40.
-# #
-# # oddly though, webob.Request only does that url encoding in unit tests, *not*
-# # in dev_appserver or prod. so, monkey patch it here to not url encode.
-# webob.Request.path = property(lambda self: self.script_name + self.path_info)
 
 
 class HandlersTest(testutil.HandlerTest):
@@ -42,15 +30,16 @@ class HandlersTest(testutil.HandlerTest):
     poco.SOURCE.contacts = self.CONTACTS
     poco.SOURCE.user_id = 2
 
-  def assert_response(self, path, expected_contacts, **kwargs):
-    resp = self.make_get_request(path, 200, **kwargs)
+  def assert_response(self, url, expected_contacts):
+    resp = self.application.get_response(url)
+    self.assertEquals(200, resp.status_int)
     self.assert_equals({
         'startIndex': 0,
         'itemsPerPage': 10,
         'totalResults': len(expected_contacts),
         'entry': expected_contacts,
         },
-      json.loads(resp.out.getvalue()))
+      json.loads(resp.body))
 
   def test_all_no_contacts(self):
     for url in '/poco', '/poco/', '/poco/@me/@all', '/poco/@me/@all/':
@@ -71,7 +60,8 @@ class HandlersTest(testutil.HandlerTest):
     self.assert_response('/poco/@me/@all/?format=json', self.CONTACTS)
 
   def test_xml_format(self):
-    resp = self.make_get_request('/poco/@me/@all/?format=xml', 200)
+    resp = self.application.get_response('/poco/@me/@all/?format=xml')
+    self.assertEquals(200, resp.status_int)
     self.assertEqual("""\
 <?xml version="1.0" encoding="UTF-8"?>
 <response>
@@ -90,7 +80,8 @@ class HandlersTest(testutil.HandlerTest):
 <id>2</id>
 </entry>
 </response>
-""", resp.out.getvalue())
+""", resp.body)
 
   def test_unknown_format(self):
-    self.make_get_request('/poco/@me/@all/?format=bad', 400)
+    resp = self.application.get_response('/poco/@me/@all/?format=bad')
+    self.assertEquals(400, resp.status_int)

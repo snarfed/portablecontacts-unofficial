@@ -69,9 +69,6 @@ class Source(object):
     else:
       logging.warning('GET %s returned %d:\n%s',
                       url, resp.status_code, resp.content)
-      # can't update() because webapp.Response.headers isn't a dict and doesn't
-      # have it
-      for key, val in resp.headers.items():
-        self.handler.response.headers[key] = val
+      self.handler.response.headers.update(resp.headers)
       self.handler.response.out.write(resp.content)
       raise exc.status_map.get(resp.status_code)(resp.content)
