@@ -5,13 +5,10 @@ Uses the REST API: https://dev.twitter.com/docs/api
 
 snarfed_org user id: 139199211
 
-Python code to pretty-print JSON response from Twitter REST API:
+Python code to pretty-print JSON responses from Twitter REST API:
 
-import json, urllib
 pprint(json.loads(urllib.urlopen(
   'https://api.twitter.com/1/users/lookup.json?screen_name=snarfed_org').read()))
-
-import json, urllib
 pprint(json.loads(urllib.urlopen(
   'https://api.twitter.com/1/followers/ids.json?screen_name=snarfed_org').read()))
 """

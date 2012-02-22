@@ -1,7 +1,5 @@
 #!/usr/bin/python
 """PortableContacts API handler classes.
-
-STATE: paging, etc.
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
@@ -29,6 +27,7 @@ XML_TEMPLATE = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <response>%s</response>
 """
+
 
 class BaseHandler(webapp2.RequestHandler):
   """Base class for PortableContacts API handlers.
@@ -65,6 +64,9 @@ class BaseHandler(webapp2.RequestHandler):
                 'itemsPerPage': self.source.ITEMS_PER_PAGE,
                 'totalResults': len(contacts),
                 'entry': contacts,
+                'filtered': False,
+                'sorted': False,
+                'updatedSince': False,
                 }
 
     format = self.request.get('format', 'json')

@@ -40,6 +40,9 @@ class HandlersTest(testutil.HandlerTest):
         'itemsPerPage': 3,
         'totalResults': len(expected_contacts),
         'entry': expected_contacts,
+        'filtered': False,
+        'sorted': False,
+        'updatedSince': False,
         },
       json.loads(resp.body))
 
@@ -67,9 +70,6 @@ class HandlersTest(testutil.HandlerTest):
     self.assertEqual("""\
 <?xml version="1.0" encoding="UTF-8"?>
 <response>
-<totalResults>3</totalResults>
-<startIndex>0</startIndex>
-<itemsPerPage>3</itemsPerPage>
 <entry>
 <displayName>me</displayName>
 <id>2</id>
@@ -81,6 +81,12 @@ class HandlersTest(testutil.HandlerTest):
 <displayName>Ryan</displayName>
 <id>2</id>
 </entry>
+<itemsPerPage>3</itemsPerPage>
+<updatedSince>False</updatedSince>
+<startIndex>0</startIndex>
+<sorted>False</sorted>
+<filtered>False</filtered>
+<totalResults>3</totalResults>
 </response>
 """, resp.body)
 
