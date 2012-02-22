@@ -19,6 +19,7 @@ pprint(json.loads(urllib.urlopen(
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
+import cgi
 import collections
 import datetime
 try:
@@ -104,7 +105,8 @@ class Twitter(source.Source):
       parsed = urlparse.urlparse(url)
       url_without_query = urlparse.urlunparse(list(parsed[0:4]) + ['', ''])
       auth.apply_auth(url_without_query, method, headers,
-                      dict(urlparse.parse_qsl(parsed.query)))
+                      # TODO: switch to urlparse.parse_qsl after python27 runtime
+                      dict(cgi.parse_qsl(parsed.query)))
       logging.info('Populated Authorization header from access token: %s',
                    headers.get('Authorization'))
 
