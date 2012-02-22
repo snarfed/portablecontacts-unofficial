@@ -2,7 +2,7 @@
  * Stylesheet for the front page, mostly the demo form.
  */
 
-body {
+div#description {
   max-width: 700px;
 }
 
@@ -16,6 +16,6 @@ select, input[type=text] {
 
 iframe {
   width: 100%;
-  min-height: 20em;
+  min-height: 40em;
   border: 1px solid gray;
 }
