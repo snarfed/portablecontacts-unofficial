@@ -1,5 +1,5 @@
 # -*- yaml -*-
-application: twitter-portablecontacts
+application: twitter-poco
 version: 1
 threadsafe: false
 api_version: 1

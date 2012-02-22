@@ -22,8 +22,8 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 # maps app id to source class
 SOURCE = {
-  'facebook-portablecontacts': facebook.Facebook,
-  'twitter-portablecontacts': twitter.Twitter,
+  'facebook-poco': facebook.Facebook,
+  'twitter-poco': twitter.Twitter,
   }.get(appengine_config.APP_ID)
 
 XML_TEMPLATE = """\

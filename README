@@ -2,8 +2,8 @@ This is a stand-in, proxy PortableContacts server for sites that don't implement
 PortableContacts themselves. It currently has implementations for Facebook and
 Twitter, served at these endpoints:
 
-http://facebook-portablecontacts.appspot.com/
-http://twitter-portablecontacts.appspot.com/
+http://facebook-poco.appspot.com/
+http://twitter-poco.appspot.com/
 
 Feel free to add more!
 
@@ -21,8 +21,7 @@ https://github.com/gwachob/pydiscovery
 
 To use this in a PortableContacts client, you'll need to hard-code exceptions
 for the facebook.com and twitter.com hosts and redirect PortableContacts HTTP
-requests to the corresponding endpoint above. (The user URI may use either
-domain, e.g. user@facebook.com or user@facebook-portablecontacts.appspot.com.)
+requests to the corresponding endpoint above.
 
 Note the app.yaml.* files, one for each App Engine app id. To work on or deploy
 a specific app id, symlink app.yaml to its app.yaml.xxx file. Likewise, if you
