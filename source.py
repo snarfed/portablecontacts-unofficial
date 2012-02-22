@@ -70,7 +70,7 @@ class Source(object):
     Returns:
       the HTTP response body
     """
-    logging.debug('Fetching %s with kwargs %s' % (url, kwargs))
+    logging.debug('Fetching %s with kwargs %s', url, kwargs)
     resp = urlfetch.fetch(url, deadline=999, **kwargs)
 
     if resp.status_code == 200:

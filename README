@@ -11,6 +11,9 @@ Background on PortableContacts:
 http://portablecontacts.net/
 http://wiki.portablecontacts.net/
 
+Test client and validator:
+http://www.plaxo.com/pdata/testClient
+
 I wish there was a Python server library for any of the components here,
 e.g. XRD/XRDS-Simple! I only found client libraries though:
 http://mrtopf.de/blog/data-portability/announcing-pydataportability-01-technical/

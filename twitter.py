@@ -3,6 +3,10 @@
 
 Uses the REST API: https://dev.twitter.com/docs/api
 
+TODO: port to
+http://code.google.com/p/oauth/source/browse/#svn%2Fcode%2Fpython . tweepy is
+just a wrapper around that anyway.
+
 snarfed_org user id: 139199211
 
 Python code to pretty-print JSON responses from Twitter REST API:
@@ -23,6 +27,7 @@ except ImportError:
   import simplejson as json
 import logging
 import re
+import urlparse
 
 import appengine_config
 import source
@@ -95,7 +100,11 @@ class Twitter(source.Source):
       auth.set_access_token(access_token_key, access_token_secret)
       method = kwargs.get('method', 'GET')
       headers = kwargs.setdefault('headers', {})
-      auth.apply_auth(url, method, headers, {})
+
+      parsed = urlparse.urlparse(url)
+      url_without_query = urlparse.urlunparse(list(parsed[0:4]) + ['', ''])
+      auth.apply_auth(url_without_query, method, headers,
+                      dict(urlparse.parse_qsl(parsed.query)))
       logging.info('Populated Authorization header from access token: %s',
                    headers.get('Authorization'))
 
