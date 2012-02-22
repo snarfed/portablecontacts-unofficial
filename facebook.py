@@ -16,7 +16,11 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 import cgi
 import collections
 import datetime
-import json
+try:
+  import json
+except ImportError:
+  import simplejson as json
+import re
 import urllib
 import urlparse
 
@@ -92,6 +96,7 @@ class Facebook(source.Source):
       resp = self.urlfetch(API_USER_URL % user_id)
       friends = [json.loads(resp)]
     else:
+      count = min(count, self.ITEMS_PER_PAGE)
       batch = urllib.urlencode({'batch': API_FRIENDS_BATCH_REQUESTS %
                                 {'offset': startIndex, 'limit': count}})
       resp = self.urlfetch(API_URL, payload=batch, method='POST')
@@ -163,8 +168,12 @@ class Facebook(source.Source):
       pc['name']['familyName'] = fb['last_name']
 
     if 'birthday' in fb:
-      pc['birthday'] = (datetime.datetime.strptime(fb['birthday'], '%m/%d/%Y')
-                          .strftime('%Y-%m-%d'))
+      match = re.match(r'(\d{1,2})/(\d{1,2})/?(\d{4})?', fb['birthday'])
+      month, day, year = match.groups()
+      if not year:
+        year = '0000'
+      pc['birthday'] = '%s-%02d-%02d' % (year, int(month), int(day))
+
     if 'gender' in fb:
       pc['gender'] = fb['gender']
 
@@ -187,8 +196,8 @@ class Facebook(source.Source):
       if 'projects' in work:
         # TODO: convert these to proper xs:date (ISO 8601) format, e.g.
         # 2008-01-23T04:56:22Z
-        org['startDate'] = min(p['start_date'] for p in projects)
-        org['endDate'] = max(p['end_date'] for p in projects)
+        org['startDate'] = min(p.get('start_date') for p in projects)
+        org['endDate'] = max(p.get('end_date') for p in projects)
 
     for school in fb.get('education', []):
       org = {}
@@ -196,8 +205,12 @@ class Facebook(source.Source):
       if 'school' in school:
         org['name'] = school['school'].get('name')
       org['type'] = 'school'
-      if 'year' in school:
-        org['endDate'] = school['year']
+
+      year = school.get('year')
+      if isinstance(year, dict):
+        org['endDate'] = year.get('name')
+      elif isinstance(year, basestring):
+        org['endDate'] = year
 
     if 'address' in fb:
       addr = fb['address']

@@ -17,7 +17,10 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
 import collections
 import datetime
-import json
+try:
+  import json
+except ImportError:
+  import simplejson as json
 import logging
 import re
 

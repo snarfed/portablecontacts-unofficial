@@ -4,7 +4,10 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-import json
+try:
+  import json
+except ImportError:
+  import simplejson as json
 import urllib
 import webapp2
 
@@ -158,7 +161,7 @@ class FacebookTest(testutil.HandlerTest):
           {'name': 'Google', 'type': 'job', 'title': 'Software Engineer',
            'startDate': '2002-01', 'endDate': '2010-01'},
           {'name': 'IBM', 'type': 'job'},
-          {'name': 'Polytechnic', 'type': 'school'},
+          {'name': 'Polytechnic', 'type': 'school', 'endDate': '2002'},
           {'name': 'Stanford', 'type': 'school', 'endDate': '2002'},
           ],
         'utcOffset': '-08:00',
@@ -207,6 +210,10 @@ class FacebookTest(testutil.HandlerTest):
               }],
           'education': [{
               'school': {'id': '7590844925','name': 'Polytechnic'},
+              'year': {
+                'id': '194878617211512',
+                'name': '2002'
+                }, 
               'type': 'High School'
               }, {
               'school': {'id': '6192688417', 'name': 'Stanford'},
@@ -220,6 +227,20 @@ class FacebookTest(testutil.HandlerTest):
           'updated_time': '2012-01-06T02:11:04+0000',
           'bio': 'something about me',
           }))
+
+  def test_to_poco_birthday_without_year(self):
+    contact = self.facebook.to_poco({'birthday': '2/28'})
+    self.assertEqual('0000-02-28', contact['birthday'])
+
+  def test_to_poco_work_projects_without_start_and_end_date(self):
+    contact = self.facebook.to_poco({
+        'work': [{'projects': [{'start_date': '2005-01'},
+                               {'end_date': '2010-01'}]}]
+        })
+
+    org = contact['organizations'][0]
+    self.assertEqual(None, org['startDate'])
+    self.assertEqual('2010-01', org['endDate'])
 
   def test_paging(self):
     self.expect_urlfetch(

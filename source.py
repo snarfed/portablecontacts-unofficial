@@ -4,7 +4,10 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-import json
+try:
+  import json
+except ImportError:
+  import simplejson as json
 import logging
 from webob import exc
 
@@ -67,6 +70,7 @@ class Source(object):
     Returns:
       the HTTP response body
     """
+    logging.debug('Fetching %s with kwargs %s' % (url, kwargs))
     resp = urlfetch.fetch(url, deadline=999, **kwargs)
 
     if resp.status_code == 200:

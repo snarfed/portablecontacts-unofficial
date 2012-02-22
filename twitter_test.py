@@ -6,7 +6,10 @@ TODO: test for null values, e.g. for utc_offset
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-import json
+try:
+  import json
+except ImportError:
+  import simplejson as json
 
 import testutil
 import twitter
