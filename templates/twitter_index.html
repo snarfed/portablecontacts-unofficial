@@ -1,5 +1,18 @@
 {% extends "index.html" %}
 
+{% block oauth_details %}
+Twitter
+<a href="https://dev.twitter.com/docs/auth/obtaining-access-tokens">supports
+OAuth 1.0a</a>, which you'll need to use for
+<a href="https://support.twitter.com/articles/14016-about-public-and-protected-tweets">protected
+users</a>. If you include an
+<a href="https://dev.twitter.com/docs/auth/implementing-sign-twitter">access
+token</a> in a request to this provider in the
+<code>access_token_key</code> and <code>access_token_secret</code> query
+parameters, they'll be used to sign and authorize requests to Twitter. See the
+demo below for an example.
+{% endblock %}
+
 {% block query_params %}
 <label id="access_token_key_label" for="access_token_key">? access_token_key =</label>
 <input id="access_token_key" name="access_token_key" type="text" size="10"

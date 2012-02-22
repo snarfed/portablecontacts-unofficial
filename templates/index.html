@@ -19,10 +19,13 @@
 
 <p>This is an unofficial
   <a href="http://portablecontacts.net/">PortableContacts</a> server
-for <a href="http://{{ domain }}/">{{ domain }}</a>. See
-the <a href="http://wiki.portablecontacts.net/">PortableContacts doc</a> for
-usage details.
-Source: <a href="https://github.com/snarfed/portablecontacts-unofficial">github.com/snarfed/portablecontacts-unofficial</a></p>
+for <a href="http://{{ domain }}/">{{ domain }}</a>. For more details, see the
+PortableContacts 
+<a href="http://portablecontacts.net/draft-spec.html">spec</a>,
+<a href="http://wiki.portablecontacts.net/">wiki</a>, and the
+<a href="https://github.com/snarfed/portablecontacts-unofficial">source for
+this site</a>.
+</p>
 
 <p>This is the API endpoint:</p>
 <ul>
@@ -37,6 +40,9 @@ Source: <a href="https://github.com/snarfed/portablecontacts-unofficial">github.
   <li><code>https://{{ host }}/.well-known/host-meta</code></li>
   <li><code>https://{{ host }}/.well-known/host-meta.xrds</code></li>
 </ul>
+
+{% block oauth_details %}
+{% endblock %}
 
 <hr />
 

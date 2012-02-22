@@ -68,20 +68,6 @@ class TwitterTest(testutil.HandlerTest):
     self.mox.ReplayAll()
     self.assert_equals([], self.twitter.get_contacts(user_id=123))
 
-  def test_get_contacts_passes_through_auth_header(self):
-    self.expect_urlfetch(
-      'https://api.twitter.com/1/account/verify_credentials.json',
-      '{"id": 9}',
-      headers={'Authorization': 'insert oauth here'})
-    self.expect_urlfetch(
-      'https://api.twitter.com/1/friends/ids.json?user_id=9',
-      '{"ids": []}',
-      headers={'Authorization': 'insert oauth here'})
-    self.mox.ReplayAll()
-
-    self.handler.request.headers['Authorization'] = 'insert oauth here'
-    self.assert_equals([], self.twitter.get_contacts())
-
   def test_get_current_user(self):
     self.expect_urlfetch(
       'https://api.twitter.com/1/account/verify_credentials.json',

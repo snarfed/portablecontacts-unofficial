@@ -51,8 +51,9 @@ class Twitter(source.Source):
   def get_contacts(self, user_id=None, startIndex=0, count=0):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
 
-    The OAuth 'Authorization' header must be provided if the current user is
-    protected, or to receive any protected friends in the returned contacts.
+    OAuth credentials must be provided in access_token_key and
+    access_token_secret query parameters if the current user is protected, or to
+    receive any protected friends in the returned contacts.
 
     Args:
       user_id: integer or string. if provided, only this user will be returned.
@@ -83,14 +84,11 @@ class Twitter(source.Source):
     return json.loads(resp)['id']
 
   def urlfetch(self, url, **kwargs):
-    """Wraps Source.urlfetch() and passes through the Authorization header.
+    """Wraps Source.urlfetch(), signing with OAuth if there's an access token.
+
+    TODO: unit test this
     """
     request = self.handler.request
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-      logging.info('Passing through Authorization header: %s', auth_header)
-      kwargs.setdefault('headers', {})['Authorization'] = auth_header
-
     access_token_key = request.get('access_token_key')
     access_token_secret = request.get('access_token_secret')
     if access_token_key and access_token_secret:

@@ -84,8 +84,9 @@ class Facebook(source.Source):
   def get_contacts(self, user_id=None, startIndex=0, count=0):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
 
-    The OAuth 'Authorization' header must be provided if the current user is
-    protected, or to receive any protected friends in the returned contacts.
+    If an OAuth access token is provided in the access_token query parameter, it
+    will be passed on to Facebook. This will be necessary for some people and
+    contact details, based on their privacy settings.
 
     Args:
       user_id: integer or string. if provided, only this user will be returned.
