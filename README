@@ -14,6 +14,9 @@ http://wiki.portablecontacts.net/
 Test client and validator:
 http://www.plaxo.com/pdata/testClient
 
+Source: https://github.com/snarfed/portablecontacts-unofficial
+Contact: Ryan Barrett <portablecontacts@ryanb.org>
+
 Twitter and Facebook support OAuth, which you'll need to use for users who don't
 make their data public. If you obtain an OAuth access token from Twitter or
 Facebook and include it in a request to this provider, it will be used to sign
