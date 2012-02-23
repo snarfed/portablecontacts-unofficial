@@ -32,16 +32,16 @@ function render_form() {
 
   // the oauth access token field styles depend on whether they have values.
   var oauth_inputs = new Array();
-  OAUTH_INPUT_IDS.map(function(id) {
-    elem = document.getElementById(id);
+  for (i in OAUTH_INPUT_IDS) {
+    elem = document.getElementById(OAUTH_INPUT_IDS[i]);
     if (elem)
       oauth_inputs.push(elem);
-  })
+  }
 
-  oauth_inputs.map(function(input) {
-    label = document.getElementById(input.id + '_label');
-    label.style.color = (input.value) ? 'black' : 'gray';
-  });
+  for (i in oauth_inputs) {
+    label = document.getElementById(oauth_inputs[i].id + '_label');
+    label.style.color = (oauth_inputs[i].value) ? 'black' : 'gray';
+  }
 
   // construct URL
   var url = '/poco/@me/@' + all_or_self + '/';
@@ -49,10 +49,10 @@ function render_form() {
     url += userid;
 
   url += '?'
-  oauth_inputs.map(function(input) {
-    if (input.value)
-      url += input.name + '=' + input.value + '&';
-  })
+  for (i in oauth_inputs) {
+    if (oauth_inputs[i].value)
+      url += oauth_inputs[i].name + '=' + oauth_inputs[i].value + '&';
+  }
 
   document.getElementById('url').innerHTML = url;
   document.getElementById('demo').action = url;
