@@ -16,6 +16,7 @@ except AttributeError:
 # it doesn't work in dev_appserver since that doesn't set
 # os.environ['DEFAULT_VERSION_HOSTNAME'].
 HOST = os.getenv('HTTP_HOST')
+SCHEME = 'https' if (os.getenv('HTTPS') == 'on') else 'http'
 
 if not os.environ.get('SERVER_SOFTWARE', '').startswith('Development'):
   DEBUG = False
