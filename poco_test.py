@@ -36,12 +36,12 @@ class HandlersTest(testutil.HandlerTest):
     poco.SOURCE.user_id = 2
 
   def assert_response(self, url, expected_contacts):
-    resp = self.application.get_response(url)
+    resp = self.application.get_response('/poco' + url)
     self.assertEquals(200, resp.status_int)
     self.assert_equals({
-        'startIndex': 0,
-        'itemsPerPage': 3,
-        'totalResults': len(expected_contacts),
+        'startIndex': int(resp.request.get('startIndex', 0)),
+        'itemsPerPage': len(expected_contacts),
+        'totalResults': len(poco.SOURCE.contacts),
         'entry': expected_contacts,
         'filtered': False,
         'sorted': False,
@@ -50,22 +50,22 @@ class HandlersTest(testutil.HandlerTest):
       json.loads(resp.body))
 
   def test_all_no_contacts(self):
-    for url in '/poco', '/poco/', '/poco/@me/@all', '/poco/@me/@all/':
+    for url in '', '/', '/@me/@all', '/@me/@all/':
       self.setUp()
       poco.SOURCE.contacts = []
       self.assert_response(url, [])
 
   def test_all_get_some_contacts(self):
-    self.assert_response('/poco/@me/@all/', self.CONTACTS)
+    self.assert_response('/@me/@all/', self.CONTACTS)
 
   def test_self(self):
-    self.assert_response('/poco/@me/@self/', self.SELF_CONTACTS)
+    self.assert_response('/@me/@self/', self.SELF_CONTACTS)
 
   def test_user_id(self):
-    self.assert_response('/poco/@me/@all/2/', self.SELF_CONTACTS)
+    self.assert_response('/@me/@all/2/', self.SELF_CONTACTS)
 
   def test_json_format(self):
-    self.assert_response('/poco/@me/@all/?format=json', self.CONTACTS)
+    self.assert_response('/@me/@all/?format=json', self.CONTACTS)
 
   def test_xml_format(self):
     resp = self.application.get_response('/poco/@me/@all/?format=xml')
@@ -93,9 +93,13 @@ class HandlersTest(testutil.HandlerTest):
 </response>
 """, resp.body)
 
+  def test_unknown_format(self):
+    resp = self.application.get_response('/poco/@me/@all/?format=bad')
+    self.assertEquals(400, resp.status_int)
+
   def test_pass_through_start_index_and_count(self):
     self.mox.StubOutWithMock(poco.SOURCE, 'get_contacts')
-    poco.SOURCE.get_contacts(None, startIndex=2, count=4).AndReturn([])
+    poco.SOURCE.get_contacts(None, start_index=2, count=4).AndReturn([])
     self.mox.ReplayAll()
     self.application.get_response('/poco/@me/@all/?startIndex=2&count=4')
 
@@ -107,6 +111,28 @@ class HandlersTest(testutil.HandlerTest):
     resp = self.application.get_response('/poco/@me/@all/?count=-1')
     self.assertEquals(400, resp.status_int)
 
-  def test_unknown_format(self):
-    resp = self.application.get_response('/poco/@me/@all/?format=bad')
-    self.assertEquals(400, resp.status_int)
+  def test_start_index_count_zero(self):
+    self.assert_response('/@me/@all/?startIndex=0&count=0', self.CONTACTS)
+
+  def test_start_index(self):
+    self.assert_response('/@me/@all/?startIndex=1&count=0', self.CONTACTS[1:])
+    self.assert_response('/@me/@all/?startIndex=2&count=0', self.CONTACTS[2:])
+
+  def test_count_past_end(self):
+    self.assert_response('/@me/@all/?startIndex=0&count=10', self.CONTACTS)
+    self.assert_response('/@me/@all/?startIndex=1&count=10', self.CONTACTS[1:])
+
+  def test_start_index_past_end(self):
+    self.assert_response('/@me/@all/?startIndex=10&count=0', [])
+    self.assert_response('/@me/@all/?startIndex=10&count=10', [])
+
+  def test_start_index_subtracts_from_count(self):
+    try:
+      orig_items_per_page = poco.ITEMS_PER_PAGE
+      poco.ITEMS_PER_PAGE = 2
+      self.assert_response('/@me/@all/?startIndex=1&count=0', self.CONTACTS[1:2])
+    finally:
+      poco.ITEMS_PER_PAGE = orig_items_per_page
+
+  def test_start_index_and_count(self):
+    self.assert_response('/@me/@all/?startIndex=1&count=1', [self.CONTACTS[1]])

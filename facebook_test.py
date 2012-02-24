@@ -8,14 +8,16 @@ try:
   import json
 except ImportError:
   import simplejson as json
+import mox
 import urllib
+import urlparse
 import webapp2
 
 import facebook
 import testutil
 
 DEFAULT_BATCH_REQUEST = urllib.urlencode(
-  {'batch': facebook.API_FRIENDS_BATCH_REQUESTS % {'offset': 0, 'limit': 0}})
+  {'batch': facebook.API_FRIENDS_BATCH_REQUESTS % {'offset': 0, 'limit': 100}})
 
 
 class FacebookTest(testutil.HandlerTest):
@@ -43,8 +45,9 @@ class FacebookTest(testutil.HandlerTest):
                          payload=DEFAULT_BATCH_REQUEST)
     self.mox.ReplayAll()
 
-    self.assert_equals([{
-          'id': '1',
+    self.assert_equals((
+        None,
+        [{'id': '1',
           'displayName': 'Mr. Foo',
           'name': {'formatted': 'Mr. Foo'},
           'accounts': [{'domain': 'facebook.com', 'userid': '1'}],
@@ -59,13 +62,13 @@ class FacebookTest(testutil.HandlerTest):
           'connected': True,
           'relationships': ['friend'],
           'photos': [{'value': 'http://graph.facebook.com/msbar/picture?type=large'}],
-          }],
+          }]),
       self.facebook.get_contacts())
 
   def test_get_contacts_user_id(self):
     self.expect_urlfetch('https://graph.facebook.com/123', '{}')
     self.mox.ReplayAll()
-    self.assert_equals([], self.facebook.get_contacts(user_id=123))
+    self.assert_equals([], self.facebook.get_contacts(user_id=123)[1])
 
   def test_get_contacts_user_id_passes_through_access_token(self):
     self.expect_urlfetch('https://graph.facebook.com/123?access_token=asdf',
@@ -75,7 +78,7 @@ class FacebookTest(testutil.HandlerTest):
     handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),
                                      webapp2.Response())
     self.facebook = facebook.Facebook(handler)
-    self.facebook.get_contacts(user_id=123)
+    self.facebook.get_contacts(user_id=123)[1]
 
   def test_get_all_contacts_passes_through_access_token(self):
     self.expect_urlfetch('https://graph.facebook.com/?access_token=asdf',
@@ -213,7 +216,7 @@ class FacebookTest(testutil.HandlerTest):
               'year': {
                 'id': '194878617211512',
                 'name': '2002'
-                }, 
+                },
               'type': 'High School'
               }, {
               'school': {'id': '6192688417', 'name': 'Stanford'},
@@ -242,12 +245,33 @@ class FacebookTest(testutil.HandlerTest):
     self.assertEqual(None, org['startDate'])
     self.assertEqual('2010-01', org['endDate'])
 
-  def test_paging(self):
-    self.expect_urlfetch(
-      'https://graph.facebook.com/',
-      '[null, {"body": "{}"}]',
-      payload=urllib.urlencode({'batch': facebook.API_FRIENDS_BATCH_REQUESTS %
-                                {'offset': 2, 'limit': 4}}),
-      method='POST')
+  def _test_paging(self, start_index, count, expected_offset, expected_limit):
+    batch = facebook.API_FRIENDS_BATCH_REQUESTS % {
+        'offset': expected_offset,
+        'limit': expected_limit}
+    def comp(actual):
+      """Mox comparator that compares expected string batch request to actual
+      url-encoded POST payload."""
+      self.assert_equals(json.loads(batch),
+                         json.loads(urlparse.parse_qs(actual)['batch'][0]))
+      return True
+
+    self.expect_urlfetch('https://graph.facebook.com/',
+                         '[null, {"body": "{}"}]',
+                         payload=mox.Func(comp),
+                         method='POST')
     self.mox.ReplayAll()
-    self.facebook.get_contacts(startIndex=2, count=4)
+    self.facebook.get_contacts(start_index=start_index, count=count)
+
+  def test_paging_defaults(self):
+    self._test_paging(0, 0, 0, facebook.Facebook.ITEMS_PER_PAGE)
+
+  def test_paging_count_too_big(self):
+    self._test_paging(0, facebook.Facebook.ITEMS_PER_PAGE + 1,
+                      0, facebook.Facebook.ITEMS_PER_PAGE)
+
+  def test_paging_start_index_subtracts_from_limit(self):
+    self._test_paging(3, 0, 3, facebook.Facebook.ITEMS_PER_PAGE - 3)
+
+  def test_paging_start_index_with_count(self):
+    self._test_paging(2, 4, 2, 4)

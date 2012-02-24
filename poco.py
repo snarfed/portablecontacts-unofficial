@@ -30,6 +30,7 @@ XML_TEMPLATE = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <response>%s</response>
 """
+ITEMS_PER_PAGE = 3
 
 
 class BaseHandler(webapp2.RequestHandler):
@@ -50,22 +51,12 @@ class BaseHandler(webapp2.RequestHandler):
     """Args:
       contacts: list of PoCo contact dicts
     """
-    kwargs = {}
-    for param in 'startIndex', 'count':
-      val = self.request.get(param, 0)
-      try:
-        val = int(val)
-        assert val >= 0
-        kwargs[param] = val
-      except (ValueError, AssertionError):
-        raise exc.HTTPBadRequest('Invalid %s: %s (should be positive int)' %
-                                 (param, val))
+    paging_params = self.get_paging_params()
+    total_results, contacts = self.source.get_contacts(user_id, **paging_params)
 
-    contacts = self.source.get_contacts(user_id, **kwargs)
-
-    response = {'startIndex': kwargs['startIndex'],
-                'itemsPerPage': self.source.ITEMS_PER_PAGE,
-                'totalResults': len(contacts),
+    response = {'startIndex': paging_params['start_index'],
+                'itemsPerPage': len(contacts),
+                'totalResults': total_results,
                 'entry': contacts,
                 'filtered': False,
                 'sorted': False,
@@ -82,6 +73,32 @@ class BaseHandler(webapp2.RequestHandler):
     else:
       raise exc.HTTPBadRequest('Invalid format: %s (should be json or xml)' %
                                format)
+
+  def get_paging_params(self):
+    """Extracts, normalizes and returns the startIndex and count query params.
+
+    Returns:
+      dict with 'start_index' and 'count' keys mapped to integers
+    """
+    start_index = self.get_positive_int('startIndex')
+    count = self.get_positive_int('count')
+
+    if count == 0:
+      count = ITEMS_PER_PAGE - start_index
+    else:
+      count = min(count, ITEMS_PER_PAGE)
+
+    return {'start_index': start_index, 'count': count}
+
+  def get_positive_int(self, param):
+    try:
+      val = self.request.get(param, 0)
+      val = int(val)
+      assert val >= 0
+      return val
+    except (ValueError, AssertionError):
+      raise exc.HTTPBadRequest('Invalid %s: %s (should be positive int)' %
+                               (param, val))
 
 
 class AllHandler(BaseHandler):

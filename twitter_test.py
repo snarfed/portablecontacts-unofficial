@@ -149,14 +149,21 @@ class TwitterTest(testutil.HandlerTest):
       self.twitter.get_contacts(**get_contacts_kwargs))
 
   def test_start_index(self):
-    self._test_paging([2, 3], startIndex=1)
+    self._test_paging([2, 3], start_index=1)
 
   def test_start_index_at_end(self):
-    self._test_paging([], startIndex=3)
+    self._test_paging([], start_index=3)
 
   def test_count(self):
     self._test_paging([1, 2], count=2)
 
-  def test_start_index_and_count(self):
-    self._test_paging([2], startIndex=1, count=1)
+  def test_count_too_big(self):
+    try:
+      orig_items_per_page = twitter.Twitter.ITEMS_PER_PAGE
+      twitter.Twitter.ITEMS_PER_PAGE = 2
+      self._test_paging([1, 2], count=4)
+    finally:
+      twitter.Twitter.ITEMS_PER_PAGE = orig_items_per_page
 
+  def test_start_index_and_count(self):
+    self._test_paging([2], start_index=1, count=1)
