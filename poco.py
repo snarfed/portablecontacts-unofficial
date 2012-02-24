@@ -30,7 +30,7 @@ XML_TEMPLATE = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <response>%s</response>
 """
-ITEMS_PER_PAGE = 3
+ITEMS_PER_PAGE = 100
 
 
 class BaseHandler(webapp2.RequestHandler):

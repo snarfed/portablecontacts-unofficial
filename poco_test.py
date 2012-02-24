@@ -97,12 +97,6 @@ class HandlersTest(testutil.HandlerTest):
     resp = self.application.get_response('/poco/@me/@all/?format=bad')
     self.assertEquals(400, resp.status_int)
 
-  def test_pass_through_start_index_and_count(self):
-    self.mox.StubOutWithMock(poco.SOURCE, 'get_contacts')
-    poco.SOURCE.get_contacts(None, start_index=2, count=4).AndReturn([])
-    self.mox.ReplayAll()
-    self.application.get_response('/poco/@me/@all/?startIndex=2&count=4')
-
   def test_bad_start_index(self):
     resp = self.application.get_response('/poco/@me/@all/?startIndex=foo')
     self.assertEquals(400, resp.status_int)

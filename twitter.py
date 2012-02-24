@@ -62,8 +62,11 @@ class Twitter(source.Source):
     """
     if user_id is not None:
       ids = [user_id]
+      total_count = 1
     else:
-      resp = self.urlfetch(API_FRIENDS_URL % self.get_current_user())
+      cur_user = json.loads(self.urlfetch(API_ACCOUNT_URL))
+      total_count = cur_user.get('friends_count')
+      resp = self.urlfetch(API_FRIENDS_URL % cur_user['id'])
       # TODO: unify with Facebook.get_contacts()
       if count == 0:
         end = self.ITEMS_PER_PAGE - start_index
@@ -72,11 +75,16 @@ class Twitter(source.Source):
       ids = json.loads(resp)['ids'][start_index:end]
 
     if not ids:
-      return []
+      return 0, []
 
     ids_str = ','.join(str(id) for id in ids)
-    resp = self.urlfetch(API_USERS_URL % ids_str)
-    return [self.to_poco(user) for user in json.loads(resp)]
+    resp = json.loads(self.urlfetch(API_USERS_URL % ids_str))
+
+    if user_id is not None and len(resp) == 0:
+      # the specified user id doesn't exist
+      total_count = 0
+
+    return total_count, [self.to_poco(user) for user in resp]
 
   def get_current_user(self):
     """Returns the currently authenticated user's id.
