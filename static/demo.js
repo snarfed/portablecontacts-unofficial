@@ -14,10 +14,10 @@ function render_form() {
   var userid = userid_elem.value;
 
   if (all_or_self == 'self') {
-    userid_elem.disabled = 'disabled';
+    userid_elem.disabled = true;
     userid_elem.style.display = 'none';
   } else {
-    userid_elem.disabled = null;
+    userid_elem.disabled = false;
     userid_elem.style.display = 'inline';
     if (userid == '' || userid == USER_ID_BLURB) {
       if (document.activeElement == userid_elem) {
@@ -45,7 +45,7 @@ function render_form() {
 
   // construct URL
   var url = '/poco/@me/@' + all_or_self + '/';
-  if (userid_elem.disabled != 'disabled' && userid != USER_ID_BLURB)
+  if (!userid_elem.disabled && userid != USER_ID_BLURB)
     url += userid;
 
   url += '?'
