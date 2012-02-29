@@ -1,7 +1,5 @@
 #!/usr/bin/python
 """Unit tests for poco.py.
-
-STATE: testing xml
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']

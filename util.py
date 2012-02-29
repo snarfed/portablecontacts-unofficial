@@ -8,9 +8,6 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 def to_xml(value):
   """Renders a dict (usually from JSON) as an XML snippet.
   """
-  # assert isinstance(value, dict)
-  # if isinstance(value, (list, tuple)):
-  #   return '\n'.join([to_xml(elem) for elem in value])
   if isinstance(value, dict):
     elems = []
     for key, vals in value.iteritems():

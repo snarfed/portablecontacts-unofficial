@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""Unit tests for poco.py.
+"""Unit tests for source.py.
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
