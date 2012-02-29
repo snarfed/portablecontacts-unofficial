@@ -84,7 +84,7 @@ class Facebook(source.Source):
       'response_type=token',
       ))
 
-  def get_contacts(self, user_id=None, startIndex=0, count=0):
+  def get_contacts(self, user_id=None, start_index=0, count=0):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
 
     If an OAuth access token is provided in the access_token query parameter, it
@@ -93,16 +93,19 @@ class Facebook(source.Source):
 
     Args:
       user_id: integer or string. if provided, only this user will be returned.
-      startIndex: int >= 0
+      start_index: int >= 0
       count: int >= 0
     """
     if user_id is not None:
       resp = self.urlfetch(API_USER_URL % user_id)
       friends = [json.loads(resp)]
     else:
-      count = min(count, self.ITEMS_PER_PAGE)
+      if count == 0:
+        limit = self.ITEMS_PER_PAGE - start_index
+      else:
+        limit = min(count, self.ITEMS_PER_PAGE)
       batch = urllib.urlencode({'batch': API_FRIENDS_BATCH_REQUESTS %
-                                {'offset': startIndex, 'limit': count}})
+                                {'offset': start_index, 'limit': limit}})
       resp = self.urlfetch(API_URL, payload=batch, method='POST')
       # the batch response is a list of responses to the individual batch
       # requests, e.g.
@@ -115,7 +118,9 @@ class Facebook(source.Source):
       # and facebook omits responses to dependency requests.
       friends = json.loads(json.loads(resp)[1]['body']).values()
 
-    return [self.to_poco(user) for user in friends]
+    # return None for total_count since we'd have to fetch and count all
+    # friends, which doesn't scale.
+    return None, [self.to_poco(user) for user in friends]
 
   def get_current_user(self):
     """Returns 'me', which Facebook interprets as the current user.

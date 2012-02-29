@@ -29,7 +29,6 @@ class Source(object):
 
   Class constants:
     DOMAIN: string, the source's domain
-    ITEMS_PER_PAGE: int, the default number of contacts returned per request
     FRONT_PAGE_TEMPLATE: string, the front page child template filename
     AUTH_URL = string, the url for the "Authenticate" front page link
   """
@@ -37,17 +36,22 @@ class Source(object):
   def __init__(self, handler):
     self.handler = handler
 
-  def get_contacts(self, user_id=None, startIndex=0, count=0):
-    """Return a (Python) list of PoCo contacts to be JSON-encoded.
+  def get_contacts(self, user_id=None, start_index=0, count=0):
+    """Return a list and total count of PoCo contacts.
 
     If user_id is provided, only that user's contact(s) are included.
-    startIndex and count determine paging, as described in the spec:
+    start_index and count determine paging, as described in the spec:
     http://portablecontacts.net/draft-spec.html#anchor14
 
     Args:
       user_id: int
-      startIndex: int >= 0
+      start_index: int >= 0
       count: int >= 0
+
+    Returns:
+      (total_results, contacts) tuple
+      total_results: int or None (e.g. if it can't be calculated efficiently)
+      contacts: list of contact dicts to be JSON-encoded
     """
     raise NotImplementedError()
 
