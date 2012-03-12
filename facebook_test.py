@@ -17,7 +17,7 @@ import facebook
 import testutil
 
 DEFAULT_BATCH_REQUEST = urllib.urlencode(
-  {'batch': facebook.API_FRIENDS_BATCH_REQUESTS % {'offset': 0, 'limit': 100}})
+  {'batch': facebook.API_FRIENDS_BATCH_REQUESTS % {'offset': 0, 'limit': 0}})
 
 
 class FacebookTest(testutil.HandlerTest):
@@ -244,34 +244,3 @@ class FacebookTest(testutil.HandlerTest):
     org = contact['organizations'][0]
     self.assertEqual(None, org['startDate'])
     self.assertEqual('2010-01', org['endDate'])
-
-  def _test_paging(self, start_index, count, expected_offset, expected_limit):
-    batch = facebook.API_FRIENDS_BATCH_REQUESTS % {
-        'offset': expected_offset,
-        'limit': expected_limit}
-    def comp(actual):
-      """Mox comparator that compares expected string batch request to actual
-      url-encoded POST payload."""
-      self.assert_equals(json.loads(batch),
-                         json.loads(urlparse.parse_qs(actual)['batch'][0]))
-      return True
-
-    self.expect_urlfetch('https://graph.facebook.com/',
-                         '[null, {"body": "{}"}]',
-                         payload=mox.Func(comp),
-                         method='POST')
-    self.mox.ReplayAll()
-    self.facebook.get_contacts(start_index=start_index, count=count)
-
-  def test_paging_defaults(self):
-    self._test_paging(0, 0, 0, facebook.Facebook.ITEMS_PER_PAGE)
-
-  def test_paging_count_too_big(self):
-    self._test_paging(0, facebook.Facebook.ITEMS_PER_PAGE + 1,
-                      0, facebook.Facebook.ITEMS_PER_PAGE)
-
-  def test_paging_start_index_subtracts_from_limit(self):
-    self._test_paging(3, 0, 3, facebook.Facebook.ITEMS_PER_PAGE - 3)
-
-  def test_paging_start_index_with_count(self):
-    self._test_paging(2, 4, 2, 4)

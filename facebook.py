@@ -69,7 +69,6 @@ class Facebook(source.Source):
   """
 
   DOMAIN = 'facebook.com'
-  ITEMS_PER_PAGE = 100
   FRONT_PAGE_TEMPLATE = 'templates/facebook_index.html'
   AUTH_URL = '&'.join((
       ('http://localhost:8000/dialog/oauth/?'
@@ -100,12 +99,8 @@ class Facebook(source.Source):
       resp = self.urlfetch(API_USER_URL % user_id)
       friends = [json.loads(resp)]
     else:
-      if count == 0:
-        limit = self.ITEMS_PER_PAGE - start_index
-      else:
-        limit = min(count, self.ITEMS_PER_PAGE)
       batch = urllib.urlencode({'batch': API_FRIENDS_BATCH_REQUESTS %
-                                {'offset': start_index, 'limit': limit}})
+                                {'offset': start_index, 'limit': count}})
       resp = self.urlfetch(API_URL, payload=batch, method='POST')
       # the batch response is a list of responses to the individual batch
       # requests, e.g.

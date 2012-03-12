@@ -44,3 +44,14 @@ rm -f app.yaml && ln -s app.yaml.twitter app.yaml && \
   ~/google_appengine/appcfg.py update . && \
 rm -f app.yaml && ln -s app.yaml.facebook app.yaml && \
   ~/google_appengine/appcfg.py update .
+
+
+TODO: tweaks to comply with Facebook's TOS:
+
+- can't use user ids; switch to User.third_party_id
+https://developers.facebook.com/policy/#data
+https://developers.facebook.com/docs/reference/api/user/
+
+- can only use friend connections if *both* users have opted into app:
+https://developers.facebook.com/policy/#data
+
