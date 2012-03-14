@@ -63,6 +63,8 @@ class BaseHandler(webapp2.RequestHandler):
                 'updatedSince': False,
                 }
 
+    self.response.headers['Access-Control-Allow-Origin'] = '*'
+
     format = self.request.get('format', 'json')
     if format == 'json':
       self.response.headers['Content-Type'] = 'application/json'

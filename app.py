@@ -31,6 +31,7 @@ BASE_HEADERS = {
   'Cache-Control': 'max-age=300',
   'X-XRDS-Location': 'https://%s/.well-known/host-meta.xrds' %
     appengine_config.HOST,
+  'Access-Control-Allow-Origin': '*',
   }
 BASE_TEMPLATE_VARS = {
   'domain': poco.SOURCE.DOMAIN,
