@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Serves the HTML front page and discovery files.
 
-The discovery files include /.well-known/host-meta (XRD) and
-/.well-known/host-meta (XRDS-Simple).
+The discovery files inside /.well-known/ include host-meta (XRD), and
+host-meta.xrds (XRDS-Simple), and host-meta.jrd (JRD ie JSON).
 
 Note that XRDS-Simple is deprecated and superceded by XRD, but the
 PortableContacts spec requires it specifically, so we support it as well as XRD.
