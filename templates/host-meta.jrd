@@ -1,7 +1,7 @@
 {"links": [
   {
     "rel": "http://portablecontacts.net/spec/1.0",
-    "template": "https://{{ host }}/poco/",
+    "href": "https://{{ host }}/poco/",
     "titles": ["PortableContacts API endpoint"]
    }
   ]
