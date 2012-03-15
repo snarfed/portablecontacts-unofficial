@@ -1,5 +1,7 @@
 #!/usr/bin/python
 """PortableContacts API handler classes.
+
+http://portablecontacts.net/draft-spec.html
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
