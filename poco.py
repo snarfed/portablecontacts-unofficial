@@ -18,7 +18,7 @@ from webob import exc
 import appengine_config
 import facebook
 import twitter
-import util
+from webutil import util
 
 from google.appengine.ext.webapp.util import run_wsgi_app
 

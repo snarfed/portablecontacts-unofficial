@@ -14,7 +14,7 @@ import urlparse
 import webapp2
 
 import facebook
-import testutil
+from webutil import testutil
 
 DEFAULT_BATCH_REQUEST = urllib.urlencode(
   {'batch': facebook.API_FRIENDS_BATCH_REQUESTS % {'offset': 0, 'limit': 0}})

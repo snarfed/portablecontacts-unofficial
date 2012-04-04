@@ -14,7 +14,7 @@ from webob import exc
 import poco
 import source
 import source_test
-import testutil
+from webutil import testutil
 
 
 class HandlersTest(testutil.HandlerTest):

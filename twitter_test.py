@@ -11,7 +11,7 @@ try:
 except ImportError:
   import simplejson as json
 
-import testutil
+from webutil import testutil
 import twitter
 
 
