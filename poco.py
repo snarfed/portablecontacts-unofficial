@@ -12,8 +12,8 @@ except ImportError:
   import simplejson as json
 import logging
 import os
-import webapp2
 from webob import exc
+from webutil import webapp2
 
 import appengine_config
 import facebook

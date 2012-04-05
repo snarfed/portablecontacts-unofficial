@@ -17,6 +17,22 @@ import source_test
 from webutil import testutil
 
 
+class FakeSource(source.Source):
+  contacts = None
+  user_id = 0
+
+  def get_contacts(self, user_id=None, start_index=0, count=0):
+    if user_id:
+      ret = [c for c in self.contacts if c['id'] == user_id]
+    else:
+      ret = self.contacts
+
+    return len(self.contacts), ret[start_index:count + start_index]
+
+  def get_current_user(self):
+    return self.user_id
+
+
 class HandlersTest(testutil.HandlerTest):
 
   CONTACTS = [
@@ -28,13 +44,13 @@ class HandlersTest(testutil.HandlerTest):
     {'id': 2, 'displayName': 'Ryan'}]
 
   def setUp(self):
-    super(HandlersTest, self).setUp(application=poco.application)
-    poco.SOURCE = source_test.FakeSource
+    super(HandlersTest, self).setUp()
+    poco.SOURCE = FakeSource
     poco.SOURCE.contacts = self.CONTACTS
     poco.SOURCE.user_id = 2
 
   def assert_response(self, url, expected_contacts):
-    resp = self.application.get_response('/poco' + url)
+    resp = poco.application.get_response('/poco' + url)
     self.assertEquals(200, resp.status_int)
     self.assert_equals({
         'startIndex': int(resp.request.get('startIndex', 0)),
@@ -66,7 +82,7 @@ class HandlersTest(testutil.HandlerTest):
     self.assert_response('/@me/@all/?format=json', self.CONTACTS)
 
   def test_xml_format(self):
-    resp = self.application.get_response('/poco/@me/@all/?format=xml')
+    resp = poco.application.get_response('/poco/@me/@all/?format=xml')
     self.assertEquals(200, resp.status_int)
     self.assertEqual("""\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -92,15 +108,15 @@ class HandlersTest(testutil.HandlerTest):
 """, resp.body)
 
   def test_unknown_format(self):
-    resp = self.application.get_response('/poco/@me/@all/?format=bad')
+    resp = poco.application.get_response('/poco/@me/@all/?format=bad')
     self.assertEquals(400, resp.status_int)
 
   def test_bad_start_index(self):
-    resp = self.application.get_response('/poco/@me/@all/?startIndex=foo')
+    resp = poco.application.get_response('/poco/@me/@all/?startIndex=foo')
     self.assertEquals(400, resp.status_int)
 
   def test_bad_count(self):
-    resp = self.application.get_response('/poco/@me/@all/?count=-1')
+    resp = poco.application.get_response('/poco/@me/@all/?count=-1')
     self.assertEquals(400, resp.status_int)
 
   def test_start_index_count_zero(self):

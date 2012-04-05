@@ -26,6 +26,7 @@ import urlparse
 
 import appengine_config
 import source
+from webutil import util
 
 OAUTH_SCOPES = ','.join((
     'email',
@@ -123,7 +124,7 @@ class Facebook(source.Source):
     return 'me'
 
   def urlfetch(self, url, **kwargs):
-    """Wraps Source.urlfetch() and passes through the access_token query param.
+    """Wraps util.urlfetch() and passes through the access_token query param.
     """
     access_token = self.handler.request.get('access_token')
     if access_token:
@@ -134,7 +135,7 @@ class Facebook(source.Source):
       parsed[4] = urllib.urlencode(params)
       url = urlparse.urlunparse(parsed)
 
-    return super(Facebook, self).urlfetch(url, **kwargs)
+    return util.urlfetch(url, **kwargs)
 
   def to_poco(self, fb):
     """Converts a Facebook user to a PoCo contact.

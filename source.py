@@ -4,15 +4,6 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-try:
-  import json
-except ImportError:
-  import simplejson as json
-import logging
-from webob import exc
-
-from google.appengine.api import urlfetch
-
 
 class Source(object):
   """Abstract base class for a source (e.g. Facebook, Twitter).
@@ -59,27 +50,3 @@ class Source(object):
     """Returns the current (authed) user, either integer id or string username.
     """
     raise NotImplementedError()
-
-  def urlfetch(self, url, **kwargs):
-    """Wraps urlfetch. Passes error responses through to the client.
-
-    ...by raising HTTPException.
-
-    Args:
-      url: str
-      kwargs: passed through to urlfetch.fetch()
-
-    Returns:
-      the HTTP response body
-    """
-    logging.debug('Fetching %s with kwargs %s', url, kwargs)
-    resp = urlfetch.fetch(url, deadline=999, **kwargs)
-
-    if resp.status_code == 200:
-      return resp.content
-    else:
-      logging.warning('GET %s returned %d:\n%s',
-                      url, resp.status_code, resp.content)
-      self.handler.response.headers.update(resp.headers)
-      self.handler.response.out.write(resp.content)
-      raise exc.status_map.get(resp.status_code)(resp.content)

@@ -33,6 +33,7 @@ import urlparse
 import appengine_config
 import source
 import tweepy
+from webutil import util
 
 API_FRIENDS_URL = 'https://api.twitter.com/1/friends/ids.json?user_id=%d'
 API_USERS_URL = 'https://api.twitter.com/1/users/lookup.json?user_id=%s'
@@ -93,7 +94,7 @@ class Twitter(source.Source):
     return json.loads(resp)['id']
 
   def urlfetch(self, url, **kwargs):
-    """Wraps Source.urlfetch(), signing with OAuth if there's an access token.
+    """Wraps util.urlfetch(), signing with OAuth if there's an access token.
 
     TODO: unit test this
     """
@@ -117,7 +118,7 @@ class Twitter(source.Source):
       logging.info('Populated Authorization header from access token: %s',
                    headers.get('Authorization'))
 
-    return super(Twitter, self).urlfetch(url, **kwargs)
+    return util.urlfetch(url, **kwargs)
 
   def to_poco(self, tw):
     """Converts a Twitter user to a PoCo contact.
