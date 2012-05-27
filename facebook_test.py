@@ -8,7 +8,6 @@ try:
   import json
 except ImportError:
   import simplejson as json
-import mox
 import urllib
 import urlparse
 from webutil import webapp2
