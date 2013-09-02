@@ -100,8 +100,7 @@ dicts, which put the contacts in a top-level `entry` list alongside
 Most requests will need an OAuth access token from the source provider. Here are
 their authentication docs:
 [Facebook](https://developers.facebook.com/docs/facebook-login/access-tokens/),
-[Twitter](https://dev.twitter.com/docs/auth/3-legged-authorization),
-[Instagram](http://instagram.com/developer/authentication/).
+[Twitter](https://dev.twitter.com/docs/auth/3-legged-authorization).
 
 If you get an access token and pass it along, it will be used to sign and
 authorize the underlying requests to the sources providers. See the demos on the
