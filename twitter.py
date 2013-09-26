@@ -35,9 +35,9 @@ import source
 import tweepy
 from webutil import util
 
-API_FRIENDS_URL = 'https://api.twitter.com/1/friends/ids.json?user_id=%d'
-API_USERS_URL = 'https://api.twitter.com/1/users/lookup.json?user_id=%s'
-API_ACCOUNT_URL = 'https://api.twitter.com/1/account/verify_credentials.json'
+API_FRIENDS_URL = 'https://api.twitter.com/1.1/friends/ids.json?user_id=%d'
+API_USERS_URL = 'https://api.twitter.com/1.1/users/lookup.json?user_id=%s'
+API_ACCOUNT_URL = 'https://api.twitter.com/1.1/account/verify_credentials.json'
 
 
 class Twitter(source.Source):
