@@ -65,9 +65,9 @@ class Twitter(source.Source):
       ids = [user_id]
       total_count = 1
     else:
-      cur_user = json.loads(self.urlfetch(API_ACCOUNT_URL))
+      cur_user = json.loads(self.urlread(API_ACCOUNT_URL))
       total_count = cur_user.get('friends_count')
-      resp = self.urlfetch(API_FRIENDS_URL % cur_user['id'])
+      resp = self.urlread(API_FRIENDS_URL % cur_user['id'])
       # TODO: unify with Facebook.get_contacts()
       if count == 0:
         end = self.ITEMS_PER_PAGE - start_index
@@ -79,7 +79,7 @@ class Twitter(source.Source):
       return 0, []
 
     ids_str = ','.join(str(id) for id in ids)
-    resp = json.loads(self.urlfetch(API_USERS_URL % ids_str))
+    resp = json.loads(self.urlread(API_USERS_URL % ids_str))
 
     if user_id is not None and len(resp) == 0:
       # the specified user id doesn't exist
@@ -90,14 +90,15 @@ class Twitter(source.Source):
   def get_current_user(self):
     """Returns the currently authenticated user's id.
     """
-    resp = self.urlfetch(API_ACCOUNT_URL)
+    resp = self.urlread(API_ACCOUNT_URL)
     return json.loads(resp)['id']
 
-  def urlfetch(self, url, **kwargs):
-    """Wraps util.urlfetch(), signing with OAuth if there's an access token.
+  def urlread(self, url):
+    """Wraps util.urlread(), signing with OAuth if there's an access token.
 
     TODO: unit test this
     """
+    headers = {}
     request = self.handler.request
     access_token_key = request.get('access_token_key')
     access_token_secret = request.get('access_token_secret')
@@ -106,19 +107,20 @@ class Twitter(source.Source):
                    access_token_key, access_token_secret)
       auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
                                  appengine_config.TWITTER_APP_SECRET)
-      auth.set_access_token(access_token_key, access_token_secret)
-      method = kwargs.get('method', 'GET')
-      headers = kwargs.setdefault('headers', {})
+      # make sure token key and secret aren't unicode because python's hmac
+      # module (used by tweepy/oauth.py) expects strings.
+      # http://stackoverflow.com/questions/11396789
+      auth.set_access_token(str(access_token_key), str(access_token_secret))
 
       parsed = urlparse.urlparse(url)
       url_without_query = urlparse.urlunparse(list(parsed[0:4]) + ['', ''])
-      auth.apply_auth(url_without_query, method, headers,
+      auth.apply_auth(url_without_query, 'GET', headers,
                       # TODO: switch to urlparse.parse_qsl after python27 runtime
                       dict(cgi.parse_qsl(parsed.query)))
       logging.info('Populated Authorization header from access token: %s',
                    headers.get('Authorization'))
 
-    return util.urlfetch(url, **kwargs)
+    return util.urlread(url, headers=headers)
 
   def to_poco(self, tw):
     """Converts a Twitter user to a PoCo contact.
