@@ -38,10 +38,8 @@ class FacebookTest(testutil.HandlerTest):
                     'location': {'name': 'Hometown'},
                     },
               })}])
-    self.expect_urlfetch('https://graph.facebook.com/',
-                         batch_resp,
-                         method='POST',
-                         payload=DEFAULT_BATCH_REQUEST)
+    self.expect_urlopen('https://graph.facebook.com/', batch_resp,
+                        data=DEFAULT_BATCH_REQUEST)
     self.mox.ReplayAll()
 
     self.assert_equals((
@@ -65,13 +63,13 @@ class FacebookTest(testutil.HandlerTest):
       self.facebook.get_contacts())
 
   def test_get_contacts_user_id(self):
-    self.expect_urlfetch('https://graph.facebook.com/123', '{}')
+    self.expect_urlopen('https://graph.facebook.com/123', '{}')
     self.mox.ReplayAll()
     self.assert_equals([], self.facebook.get_contacts(user_id=123)[1])
 
   def test_get_contacts_user_id_passes_through_access_token(self):
-    self.expect_urlfetch('https://graph.facebook.com/123?access_token=asdf',
-                         '{"id": 123}')
+    self.expect_urlopen('https://graph.facebook.com/123?access_token=asdf',
+                        '{"id": 123}')
     self.mox.ReplayAll()
 
     handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),
@@ -80,10 +78,9 @@ class FacebookTest(testutil.HandlerTest):
     self.facebook.get_contacts(user_id=123)[1]
 
   def test_get_all_contacts_passes_through_access_token(self):
-    self.expect_urlfetch('https://graph.facebook.com/?access_token=asdf',
-                         '[null, {"body": "{}"}]',
-                         method='POST',
-                         payload=DEFAULT_BATCH_REQUEST)
+    self.expect_urlopen('https://graph.facebook.com/?access_token=asdf',
+                        '[null, {"body": "{}"}]',
+                        data=DEFAULT_BATCH_REQUEST)
     self.mox.ReplayAll()
 
     handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),

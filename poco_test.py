@@ -12,7 +12,6 @@ from webob import exc
 
 import poco
 import source
-import source_test
 from webutil import testutil
 
 

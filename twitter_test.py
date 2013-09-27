@@ -23,13 +23,13 @@ class TwitterTest(testutil.HandlerTest):
 
   def test_get_contacts(self):
     self.expect_urlopen(
-      'https://api.twitter.com/1/account/verify_credentials.json',
+      'https://api.twitter.com/1.1/account/verify_credentials.json',
       '{"id": 9, "friends_count": 5}')
     self.expect_urlopen(
-      'https://api.twitter.com/1/friends/ids.json?user_id=9',
+      'https://api.twitter.com/1.1/friends/ids.json?user_id=9',
       '{"ids": [123, 456]}')
     self.expect_urlopen(
-      'https://api.twitter.com/1/users/lookup.json?user_id=123,456',
+      'https://api.twitter.com/1.1/users/lookup.json?user_id=123,456',
       json.dumps([{
           'id': 123,
           'screen_name': 'foo',
@@ -64,14 +64,14 @@ class TwitterTest(testutil.HandlerTest):
 
   def test_get_contacts_user_id(self):
     self.expect_urlopen(
-      'https://api.twitter.com/1/users/lookup.json?user_id=123',
+      'https://api.twitter.com/1.1/users/lookup.json?user_id=123',
       '[{"id": 123}]')
     self.mox.ReplayAll()
     self.assert_equals((1, []), self.twitter.get_contacts(user_id=123))
 
   def test_get_contacts_user_id_no_results(self):
     self.expect_urlopen(
-      'https://api.twitter.com/1/users/lookup.json?user_id=123',
+      'https://api.twitter.com/1.1/users/lookup.json?user_id=123',
       '[]')
     self.mox.ReplayAll()
     self.assert_equals(
@@ -82,7 +82,7 @@ class TwitterTest(testutil.HandlerTest):
 
   def test_get_current_user(self):
     self.expect_urlopen(
-      'https://api.twitter.com/1/account/verify_credentials.json',
+      'https://api.twitter.com/1.1/account/verify_credentials.json',
       '{"id": 9, "friends_count": 5}')
     self.mox.ReplayAll()
     self.assert_equals(9, self.twitter.get_current_user())
