@@ -97,12 +97,12 @@ class Facebook(source.Source):
       count: int >= 0
     """
     if user_id is not None:
-      resp = self.urlfetch(API_USER_URL % user_id)
+      resp = self.urlread(API_USER_URL % user_id)
       friends = [json.loads(resp)]
     else:
       batch = urllib.urlencode({'batch': API_FRIENDS_BATCH_REQUESTS %
                                 {'offset': start_index, 'limit': count}})
-      resp = self.urlfetch(API_URL, payload=batch, method='POST')
+      resp = self.urlread(API_URL, data=batch)
       # the batch response is a list of responses to the individual batch
       # requests, e.g.
       #
@@ -123,8 +123,8 @@ class Facebook(source.Source):
     """
     return 'me'
 
-  def urlfetch(self, url, **kwargs):
-    """Wraps util.urlfetch() and passes through the access_token query param.
+  def urlread(self, url, **kwargs):
+    """Wraps util.urlread() and passes through the access_token query param.
     """
     access_token = self.handler.request.get('access_token')
     if access_token:
@@ -135,7 +135,7 @@ class Facebook(source.Source):
       parsed[4] = urllib.urlencode(params)
       url = urlparse.urlunparse(parsed)
 
-    return util.urlfetch(url, **kwargs)
+    return util.urlread(url, **kwargs)
 
   def to_poco(self, fb):
     """Converts a Facebook user to a PoCo contact.
