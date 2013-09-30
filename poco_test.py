@@ -43,6 +43,11 @@ class HandlersTest(testutil.HandlerTest):
 
   def setUp(self):
     super(HandlersTest, self).setUp()
+    self.reset()
+
+  def reset(self):
+    self.mox.UnsetStubs()
+    self.mox.ResetAll()
     poco.SOURCE = FakeSource
     poco.SOURCE.contacts = self.CONTACTS
     poco.SOURCE.user_id = 2
@@ -63,7 +68,7 @@ class HandlersTest(testutil.HandlerTest):
 
   def test_all_no_contacts(self):
     for url in '', '/', '/@me/@all', '/@me/@all/':
-      self.setUp()
+      self.reset()
       poco.SOURCE.contacts = []
       self.assert_response(url, [])
 
