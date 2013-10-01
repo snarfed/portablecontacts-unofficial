@@ -11,13 +11,6 @@ class Source(object):
   Concrete subclasses must override DOMAIN and implement get_contacts() and
   get_current_user().
 
-  OAuth credentials may be extracted from the current request's query parameters
-  e.g. access_token_key and access_token_secret for Twitter (OAuth 1.1a) and
-  access_token for Facebook (OAuth 2.0).
-
-  Attributes:
-    handler: the current RequestHandler
-
   Class constants:
     DOMAIN: string, the source's domain
     FRONT_PAGE_TEMPLATE: string, the front page child template filename
