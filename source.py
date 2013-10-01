@@ -12,7 +12,7 @@ class Source(object):
   get_current_user().
 
   OAuth credentials may be extracted from the current request's query parameters
-  e.g. access_token_key and access_token_secret for Twitter (OAuth 1.0a) and
+  e.g. access_token_key and access_token_secret for Twitter (OAuth 1.1a) and
   access_token for Facebook (OAuth 2.0).
 
   Attributes:
