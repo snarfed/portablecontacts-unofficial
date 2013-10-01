@@ -49,12 +49,21 @@ class Twitter(source.Source):
   FRONT_PAGE_TEMPLATE = 'templates/twitter_index.html'
   AUTH_URL = '/start_auth'
 
+  def __init__(self, access_token_key, access_token_secret):
+    """Constructor.
+
+    Twitter now requires authentication in v1.1 of their API. You can get an
+    OAuth access token by creating an app here: https://dev.twitter.com/apps/new
+
+    Args:
+      access_token_key: string, OAuth access token key
+      access_token_secret: string, OAuth access token secret
+    """
+    self.access_token_key = access_token_key
+    self.access_token_secret = access_token_secret
+
   def get_contacts(self, user_id=None, start_index=0, count=0):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
-
-    OAuth credentials must be provided in access_token_key and
-    access_token_secret query parameters if the current user is protected, or to
-    receive any protected friends in the returned contacts.
 
     Args:
       user_id: integer or string. if provided, only this user will be returned.
@@ -98,27 +107,22 @@ class Twitter(source.Source):
 
     TODO: unit test this
     """
-    headers = {}
-    request = self.handler.request
-    access_token_key = request.get('access_token_key')
-    access_token_secret = request.get('access_token_secret')
-    if access_token_key and access_token_secret:
-      logging.info('Found access token key %s and secret %s',
-                   access_token_key, access_token_secret)
-      auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
-                                 appengine_config.TWITTER_APP_SECRET)
-      # make sure token key and secret aren't unicode because python's hmac
-      # module (used by tweepy/oauth.py) expects strings.
-      # http://stackoverflow.com/questions/11396789
-      auth.set_access_token(str(access_token_key), str(access_token_secret))
+    auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
+                               appengine_config.TWITTER_APP_SECRET)
+    # make sure token key and secret aren't unicode because python's hmac
+    # module (used by tweepy/oauth.py) expects strings.
+    # http://stackoverflow.com/questions/11396789
+    auth.set_access_token(str(self.access_token_key),
+                          str(self.access_token_secret))
 
-      parsed = urlparse.urlparse(url)
-      url_without_query = urlparse.urlunparse(list(parsed[0:4]) + ['', ''])
-      auth.apply_auth(url_without_query, 'GET', headers,
-                      # TODO: switch to urlparse.parse_qsl after python27 runtime
-                      dict(cgi.parse_qsl(parsed.query)))
-      logging.info('Populated Authorization header from access token: %s',
-                   headers.get('Authorization'))
+    parsed = urlparse.urlparse(url)
+    url_without_query = urlparse.urlunparse(list(parsed[0:4]) + ['', ''])
+    headers = {}
+    auth.apply_auth(url_without_query, 'GET', headers,
+                    # TODO: switch to urlparse.parse_qsl after python27 runtime
+                    dict(cgi.parse_qsl(parsed.query)))
+    logging.info('Populated Authorization header from access token: %s',
+                 headers.get('Authorization'))
 
     return util.urlread(url, headers=headers)
 

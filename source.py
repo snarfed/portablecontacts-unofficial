@@ -24,9 +24,6 @@ class Source(object):
     AUTH_URL = string, the url for the "Authenticate" front page link
   """
 
-  def __init__(self, handler):
-    self.handler = handler
-
   def get_contacts(self, user_id=None, start_index=0, count=0):
     """Return a list and total count of PoCo contacts.
 

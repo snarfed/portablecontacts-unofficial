@@ -84,12 +84,20 @@ class Facebook(source.Source):
       'response_type=token',
       ))
 
+  def __init__(self, access_token=None):
+    """Constructor.
+
+    If an OAuth access token is provided, it will be passed on to Facebook. This
+    will be necessary for some people and contact details, based on their
+    privacy settings.
+
+    Args:
+      access_token: string, optional OAuth access token
+    """
+    self.access_token = access_token
+
   def get_contacts(self, user_id=None, start_index=0, count=0):
     """Returns a (Python) list of PoCo contacts to be JSON-encoded.
-
-    If an OAuth access token is provided in the access_token query parameter, it
-    will be passed on to Facebook. This will be necessary for some people and
-    contact details, based on their privacy settings.
 
     Args:
       user_id: integer or string. if provided, only this user will be returned.
@@ -124,14 +132,13 @@ class Facebook(source.Source):
     return 'me'
 
   def urlread(self, url, **kwargs):
-    """Wraps util.urlread() and passes through the access_token query param.
+    """Wraps util.urlread() and passes through the access token.
     """
-    access_token = self.handler.request.get('access_token')
-    if access_token:
+    if self.access_token:
       parsed = list(urlparse.urlparse(url))
       # query params are in index 4
       # TODO: when this is on python 2.7, switch to urlparse.parse_qsl
-      params = cgi.parse_qsl(parsed[4]) + [('access_token', access_token)]
+      params = cgi.parse_qsl(parsed[4]) + [('access_token', self.access_token)]
       parsed[4] = urllib.urlencode(params)
       url = urlparse.urlunparse(parsed)
 

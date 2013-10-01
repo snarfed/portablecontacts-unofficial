@@ -23,7 +23,7 @@ class FacebookTest(testutil.HandlerTest):
 
   def setUp(self):
     super(FacebookTest, self).setUp()
-    self.facebook = facebook.Facebook(self.handler)
+    self.facebook = facebook.Facebook()
 
   def test_get_contacts(self):
     batch_resp = json.dumps(
@@ -72,9 +72,7 @@ class FacebookTest(testutil.HandlerTest):
                         '{"id": 123}')
     self.mox.ReplayAll()
 
-    handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),
-                                     webapp2.Response())
-    self.facebook = facebook.Facebook(handler)
+    self.facebook = facebook.Facebook(access_token='asdf')
     self.facebook.get_contacts(user_id=123)[1]
 
   def test_get_all_contacts_passes_through_access_token(self):
@@ -85,7 +83,7 @@ class FacebookTest(testutil.HandlerTest):
 
     handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),
                                      webapp2.Response())
-    self.facebook = facebook.Facebook(handler)
+    self.facebook = facebook.Facebook(access_token='asdf')
     self.facebook.get_contacts()
 
   def test_to_poco_id_only(self):
