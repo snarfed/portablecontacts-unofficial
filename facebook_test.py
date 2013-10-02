@@ -81,8 +81,6 @@ class FacebookTest(testutil.HandlerTest):
                         data=DEFAULT_BATCH_REQUEST)
     self.mox.ReplayAll()
 
-    handler = webapp2.RequestHandler(webapp2.Request.blank('/?access_token=asdf'),
-                                     webapp2.Response())
     self.facebook = facebook.Facebook(access_token='asdf')
     self.facebook.get_contacts()
 

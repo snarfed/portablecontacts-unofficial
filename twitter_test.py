@@ -20,8 +20,7 @@ class TwitterTest(testutil.HandlerTest):
 
   def setUp(self):
     super(TwitterTest, self).setUp()
-    self.twitter = twitter.Twitter(access_token_key='key',
-                                   access_token_secret='secret')
+    self.twitter = twitter.Twitter('key', 'secret')
 
   def test_get_contacts(self):
     self.expect_urlopen(
