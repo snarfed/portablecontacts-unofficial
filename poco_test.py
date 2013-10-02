@@ -16,8 +16,12 @@ from webutil import testutil
 
 
 class FakeSource(source.Source):
+  last_ctor_kwargs = None
   contacts = None
   user_id = 0
+
+  def __init__(self, **kwargs):
+    FakeSource.last_ctor_kwargs = kwargs
 
   def get_contacts(self, user_id=None, start_index=0, count=0):
     if user_id:
@@ -147,3 +151,14 @@ class HandlersTest(testutil.HandlerTest):
 
   def test_start_index_and_count(self):
     self.assert_response('/@me/@all/?startIndex=1&count=1', [self.CONTACTS[1]])
+
+  def test_access_token(self):
+    poco.application.get_response('/poco/@me/@all/?access_token=my-token')
+    self.assertEquals({'access_token': 'my-token'}, FakeSource.last_ctor_kwargs)
+
+  def test_access_token_key_and_secret(self):
+    poco.application.get_response(
+      '/poco/@me/@all/?access_token_key=my-key&access_token_secret=my-secret')
+    self.assertEquals({'access_token_key': 'my-key',
+                       'access_token_secret': 'my-secret'},
+                      FakeSource.last_ctor_kwargs)
