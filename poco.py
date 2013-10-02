@@ -47,7 +47,10 @@ class BaseHandler(webapp2.RequestHandler):
 
   def __init__(self, *args, **kwargs):
     super(BaseHandler, self).__init__(*args, **kwargs)
-    self.source = SOURCE(self)
+    args = {key: self.request.params[key]
+            for key in ('access_token', 'access_token_key', 'access_token_secret')
+            if key in self.request.params}
+    self.source = SOURCE(**args)
 
   def get(self, user_id=None):
     """Args:
