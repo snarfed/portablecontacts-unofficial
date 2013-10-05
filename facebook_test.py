@@ -4,10 +4,7 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-try:
-  import json
-except ImportError:
-  import simplejson as json
+import json
 import urllib
 import urlparse
 from webutil import webapp2

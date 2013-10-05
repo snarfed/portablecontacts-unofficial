@@ -6,28 +6,16 @@ Uses the REST API: https://dev.twitter.com/docs/api
 TODO: port to
 http://code.google.com/p/oauth/source/browse/#svn%2Fcode%2Fpython . tweepy is
 just a wrapper around that anyway.
-
-snarfed_org user id: 139199211
-
-Python code to pretty-print JSON responses from Twitter REST API:
-
-pprint(json.loads(urllib.urlopen(
-  'https://api.twitter.com/1/users/lookup.json?screen_name=snarfed_org').read()))
-pprint(json.loads(urllib.urlopen(
-  'https://api.twitter.com/1/followers/ids.json?screen_name=snarfed_org').read()))
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-import cgi
 import collections
 import datetime
-try:
-  import json
-except ImportError:
-  import simplejson as json
+import json
 import logging
 import re
+import urllib2
 import urlparse
 
 import appengine_config
@@ -103,7 +91,7 @@ class Twitter(source.Source):
     return json.loads(resp)['id']
 
   def urlread(self, url):
-    """Wraps util.urlread(), signing with OAuth if there's an access token.
+    """Wraps urllib2.urlopen() and adds an OAuth signature.
 
     TODO: unit test this
     """
@@ -119,12 +107,11 @@ class Twitter(source.Source):
     url_without_query = urlparse.urlunparse(list(parsed[0:4]) + ['', ''])
     headers = {}
     auth.apply_auth(url_without_query, 'GET', headers,
-                    # TODO: switch to urlparse.parse_qsl after python27 runtime
-                    dict(cgi.parse_qsl(parsed.query)))
+                    dict(urlparse.parse_qsl(parsed.query)))
     logging.info('Populated Authorization header from access token: %s',
                  headers.get('Authorization'))
 
-    return util.urlread(url, headers=headers)
+    return urllib2.urlopen(urllib2.Request(url, headers=headers)).read()
 
   def to_poco(self, tw):
     """Converts a Twitter user to a PoCo contact.

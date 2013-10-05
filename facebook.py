@@ -16,17 +16,14 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 import cgi
 import collections
 import datetime
-try:
-  import json
-except ImportError:
-  import simplejson as json
+import json
 import re
 import urllib
+import urllib2
 import urlparse
 
 import appengine_config
 import source
-from webutil import util
 
 OAUTH_SCOPES = ','.join((
     'email',
@@ -132,17 +129,16 @@ class Facebook(source.Source):
     return 'me'
 
   def urlread(self, url, **kwargs):
-    """Wraps util.urlread() and passes through the access token.
+    """Wraps urllib2.urlopen() and passes through the access token.
     """
     if self.access_token:
       parsed = list(urlparse.urlparse(url))
       # query params are in index 4
-      # TODO: when this is on python 2.7, switch to urlparse.parse_qsl
-      params = cgi.parse_qsl(parsed[4]) + [('access_token', self.access_token)]
+      params = urlparse.parse_qsl(parsed[4]) + [('access_token', self.access_token)]
       parsed[4] = urllib.urlencode(params)
       url = urlparse.urlunparse(parsed)
 
-    return util.urlread(url, **kwargs)
+    return urllib2.urlopen(url).read()
 
   def to_poco(self, fb):
     """Converts a Facebook user to a PoCo contact.
