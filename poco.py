@@ -6,21 +6,18 @@ http://portablecontacts.net/draft-spec.html
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-try:
-  import json
-except ImportError:
-  import simplejson as json
+import json
 import logging
 import os
 from webob import exc
-from webutil import webapp2
 
 import appengine_config
 import facebook
 import twitter
+from webutil import handlers
 from webutil import util
 
-from google.appengine.ext.webapp.util import run_wsgi_app
+import webapp2
 
 # maps app id to source class
 SOURCE = {
@@ -44,6 +41,7 @@ class BaseHandler(webapp2.RequestHandler):
   Attributes:
     source: Source subclass
   """
+  handle_exception = handlers.handle_exception
 
   def __init__(self, *args, **kwargs):
     super(BaseHandler, self).__init__(*args, **kwargs)
@@ -137,10 +135,3 @@ application = webapp2.WSGIApplication(
      ('/poco/@me/@self/?', SelfHandler),
      ],
     debug=appengine_config.DEBUG)
-
-def main():
-  run_wsgi_app(application)
-
-
-if __name__ == '__main__':
-  main()

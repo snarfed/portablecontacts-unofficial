@@ -6,10 +6,7 @@ TODO: test for null values, e.g. for utc_offset
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-try:
-  import json
-except ImportError:
-  import simplejson as json
+import json
 import mox
 
 from webutil import testutil

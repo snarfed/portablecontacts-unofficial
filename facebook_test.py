@@ -7,9 +7,9 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 import json
 import urllib
 import urlparse
-from webutil import webapp2
 
 import facebook
+import webapp2
 from webutil import testutil
 
 DEFAULT_BATCH_REQUEST = urllib.urlencode(

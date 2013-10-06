@@ -16,11 +16,11 @@ handlers:
   upload: static/favicon.ico
 
 - url: /(.well-known/.*)?
-  script: app.py
+  script: app.application
   secure: always
 
 - url: /poco(/.*)?
-  script: poco.py
+  script: poco.application
   secure: always
 
 skip_files:

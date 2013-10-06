@@ -4,10 +4,8 @@
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-try:
-  import json
-except ImportError:
-  import simplejson as json
+import json
+import urlparse
 from webob import exc
 
 import poco
@@ -57,10 +55,13 @@ class HandlersTest(testutil.HandlerTest):
     poco.SOURCE.user_id = 2
 
   def assert_response(self, url, expected_contacts):
+    query_params = dict(urlparse.parse_qsl(urlparse.urlparse(url).query))
+    expected_start_index = int(query_params.get('startIndex', 0))
+
     resp = poco.application.get_response('/poco' + url)
     self.assertEquals(200, resp.status_int)
     self.assert_equals({
-        'startIndex': int(resp.request.get('startIndex', 0)),
+        'startIndex': expected_start_index,
         'itemsPerPage': len(expected_contacts),
         'totalResults': len(poco.SOURCE.contacts),
         'entry': expected_contacts,

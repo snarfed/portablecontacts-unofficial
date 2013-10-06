@@ -9,13 +9,13 @@ __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 import logging
 import urllib
 from webob import exc
-from webutil import webapp2
 
 import appengine_config
 import tweepy
+from webutil import handlers
 
-from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
+import webapp2
 
 OAUTH_CALLBACK = 'http://%s/oauth_callback' % appengine_config.HOST
 
@@ -33,6 +33,8 @@ class StartAuthHandler(webapp2.RequestHandler):
   Fetches an OAuth request token, then redirects to Twitter's auth page to
   request an access token.
   """
+  handle_exception = handlers.handle_exception
+
   def get(self):
     try:
       auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
@@ -55,6 +57,7 @@ class StartAuthHandler(webapp2.RequestHandler):
 class CallbackHandler(webapp2.RequestHandler):
   """The OAuth callback. Fetches an access token and redirects to the front page.
   """
+  handle_exception = handlers.handle_exception
 
   def get(self):
     oauth_token = self.request.get('oauth_token', None)
@@ -86,14 +89,8 @@ class CallbackHandler(webapp2.RequestHandler):
     self.redirect('/?%s' % urllib.urlencode(params))
 
 
-def main():
-  application = webapp2.WSGIApplication(
-      [('/start_auth', StartAuthHandler),
-       ('/oauth_callback', CallbackHandler),
-       ],
-      debug=appengine_config.DEBUG)
-  run_wsgi_app(application)
-
-
-if __name__ == '__main__':
-  main()
+application = webapp2.WSGIApplication(
+  [('/start_auth', StartAuthHandler),
+   ('/oauth_callback', CallbackHandler),
+   ],
+  debug=appengine_config.DEBUG)
