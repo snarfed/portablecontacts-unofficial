@@ -13,10 +13,10 @@ https://developers.facebook.com/blog/post/446/
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
 
-import cgi
 import collections
 import datetime
 import json
+import logging
 import re
 import urllib
 import urllib2
@@ -130,6 +130,8 @@ class Facebook(source.Source):
 
   def urlread(self, url, **kwargs):
     """Wraps urllib2.urlopen() and passes through the access token.
+
+    Keyword args are passed through to urllib2.Request.
     """
     if self.access_token:
       parsed = list(urlparse.urlparse(url))
@@ -138,7 +140,8 @@ class Facebook(source.Source):
       parsed[4] = urllib.urlencode(params)
       url = urlparse.urlunparse(parsed)
 
-    return urllib2.urlopen(url).read()
+    logging.info('Fetching %s with %s', url, kwargs)
+    return urllib2.urlopen(urllib2.Request(url, **kwargs)).read()
 
   def to_poco(self, fb):
     """Converts a Facebook user to a PoCo contact.
