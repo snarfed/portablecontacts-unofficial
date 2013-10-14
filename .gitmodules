@@ -7,3 +7,6 @@
 [submodule "webutil"]
 	path = webutil
 	url = git@github.com:snarfed/webutil.git
+[submodule "oauth-dropins"]
+	path = oauth-dropins
+	url = git@github.com:snarfed/oauth-dropins.git
