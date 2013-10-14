@@ -1,11 +1,6 @@
-#!/usr/bin/python
 """Twitter source class.
 
-Uses the REST API: https://dev.twitter.com/docs/api
-
-TODO: port to
-http://code.google.com/p/oauth/source/browse/#svn%2Fcode%2Fpython . tweepy is
-just a wrapper around that anyway.
+Uses the v1.1 REST API: https://dev.twitter.com/docs/api
 """
 
 __author__ = ['Ryan Barrett <portablecontacts@ryanb.org>']
@@ -19,8 +14,8 @@ import urllib2
 import urlparse
 
 import appengine_config
+from oauth_dropins.twitter import TwitterAuth
 import source
-import tweepy
 
 API_FRIENDS_URL = 'https://api.twitter.com/1.1/friends/ids.json?user_id=%d'
 API_USERS_URL = 'https://api.twitter.com/1.1/users/lookup.json?user_id=%s'
@@ -91,27 +86,9 @@ class Twitter(source.Source):
 
   def urlread(self, url):
     """Wraps urllib2.urlopen() and adds an OAuth signature.
-
-    TODO: unit test this
     """
-    auth = tweepy.OAuthHandler(appengine_config.TWITTER_APP_KEY,
-                               appengine_config.TWITTER_APP_SECRET)
-    # make sure token key and secret aren't unicode because python's hmac
-    # module (used by tweepy/oauth.py) expects strings.
-    # http://stackoverflow.com/questions/11396789
-    auth.set_access_token(str(self.access_token_key),
-                          str(self.access_token_secret))
-
-    parsed = urlparse.urlparse(url)
-    url_without_query = urlparse.urlunparse(list(parsed[0:4]) + ['', ''])
-    headers = {}
-    auth.apply_auth(url_without_query, 'GET', headers,
-                    dict(urlparse.parse_qsl(parsed.query)))
-    logging.info('Populated Authorization header from access token: %s',
-                 headers.get('Authorization'))
-    logging.info('Fetching %s', url)
-
-    return urllib2.urlopen(urllib2.Request(url, headers=headers)).read()
+    return TwitterAuth.signed_urlopen(url, self.access_token_key,
+                                      self.access_token_secret).read()
 
   def to_poco(self, tw):
     """Converts a Twitter user to a PoCo contact.
