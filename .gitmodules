@@ -1,3 +1,0 @@
-[submodule "oauth-dropins"]
-	path = oauth-dropins
-	url = git@github.com:snarfed/oauth-dropins.git
