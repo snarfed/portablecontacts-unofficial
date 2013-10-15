@@ -19,6 +19,10 @@ handlers:
   script: app.application
   secure: always
 
+- url: /(start_auth|oauth_callback)
+  script: facebook_demo.application
+  secure: always
+
 - url: /poco(/.*)?
   script: poco.application
   secure: always
