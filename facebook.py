@@ -23,6 +23,7 @@ import urlparse
 
 import appengine_config
 import source
+from webutil import util
 
 OAUTH_SCOPES = ','.join((
     'email',
@@ -122,12 +123,7 @@ class Facebook(source.Source):
     Keyword args are passed through to urllib2.Request.
     """
     if self.access_token:
-      parsed = list(urlparse.urlparse(url))
-      # query params are in index 4
-      params = urlparse.parse_qsl(parsed[4]) + [('access_token', self.access_token)]
-      parsed[4] = urllib.urlencode(params)
-      url = urlparse.urlunparse(parsed)
-
+      url = util.add_query_params(url, [('access_token', self.access_token)])
     logging.info('Fetching %s with %s', url, kwargs)
     return urllib2.urlopen(urllib2.Request(url, **kwargs)).read()
 

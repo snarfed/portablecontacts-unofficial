@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Serves the the front page, discovery files, and OAuth flows.
 
 The discovery files inside /.well-known/ include host-meta (XRD), and
