@@ -112,8 +112,6 @@ The useful methods are `get_contact()` and `get_current_user()`, which returns t
 Future work
 ---
 
-Twitter needs to be ported to their v1.1 API.
-
 The REST APIs are currently much more usable than the library. We need to make the library easier to use. Most of the hard work is already done; here's what remains.
 
   * Allow passing OAuth tokens as keyword args.
