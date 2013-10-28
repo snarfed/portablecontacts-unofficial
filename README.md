@@ -41,7 +41,7 @@ tw.get_contacts()
 is equivalent to this `HTTP GET` request:
 
 ```
-https://twitter-poco.appspot.com/poco/@me/@all/USER_ID
+https://twitter-poco.appspot.com/poco/@me/@all/
   ?access_token_key=ACCESS_TOKEN_KEY&access_token_secret=ACCESS_TOKEN_SECRET
 ```
 
