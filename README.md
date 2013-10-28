@@ -34,14 +34,15 @@ Let's start with an example. This code using the library:
 ```python
 from portablecontacts_unofficial import twitter
 ...
-tw = twitter.Twitter(handler)
+tw = twitter.Twitter(ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET)
 tw.get_contacts()
 ```
 
 is equivalent to this `HTTP GET` request:
 
 ```
-https://twitter-poco.appspot.com/poco/@me/@all/USER_ID?access_token_key=KEY&access_token_secret=SECRET
+https://twitter-poco.appspot.com/poco/@me/@all/USER_ID
+  ?access_token_key=ACCESS_TOKEN_KEY&access_token_secret=ACCESS_TOKEN_SECRET
 ```
 
 They return the Twitter users that the authenticated user follows. Here's the JSON output:
@@ -78,7 +79,7 @@ Paging is supported via the `startIndex` and `count` parameters. They're self ex
 
 Output data is [PoCo JSON](http://portablecontacts.net/draft-spec.html#rfc.section.6.3.4) formatted [response object](http://portablecontacts.net/draft-spec.html#response-format) dicts, which put the contacts in a top-level `entry` list alongside `itemsPerPage`, `totalCount`, etc. fields.
 
-Most requests will need an OAuth access token from the source provider. Here are their authentication docs: [Facebook](https://developers.facebook.com/docs/facebook-login/access-tokens/), [Twitter](https://dev.twitter.com/docs/auth/3-legged-authorization).
+Most Facebook requests and all Twitter requests will need OAuth access tokens. If you're using Python on Google App Engine, [oauth-dropins](https://github.com/snarfed/oauth-dropins) is an easy way to add OAuth client flows for these sites. Otherwise, here are the sites' authentication docs: [Facebook](https://developers.facebook.com/docs/facebook-login/access-tokens/), [Twitter](https://dev.twitter.com/docs/auth/3-legged-authorization).
 
 If you get an access token and pass it along, it will be used to sign and authorize the underlying requests to the sources providers. See the demos on the REST API [endpoints above](#about) for examples.
 
