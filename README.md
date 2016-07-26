@@ -1,6 +1,9 @@
 portablecontacts-unofficial ![PortableContacts](https://raw.github.com/snarfed/portablecontacts-unofficial/master/static/logo.jpg)
 ===
 
+_This project is unmaintained, and [Portable Contacts](https://en.wikipedia.org/wiki/Portable_Contacts) seems to be dead. [OpenSocial absorbed it](https://en.wikipedia.org/wiki/OpenSocial#mw-content-text), then [W3C's Social Web group absorbed OpenSocial](https://www.w3.org/blog/2014/12/opensocial-foundation-moves-standards-work-to-w3c-social-web-activity/), so OpenSocial is probably dead too. RIP. Happy hacking!_
+
+
   * [About](#about)
   * [Using](#using)
     * [Using the REST API](#using-the-REST-API)
@@ -12,10 +15,12 @@ portablecontacts-unofficial ![PortableContacts](https://raw.github.com/snarfed/p
 About
 ---
 
-This is a library and REST API that converts Facebook and Twitter user data to the [PortableContacts](http://portablecontacts.net/) format. You can try it out with these interactive demos:
+This is a library and REST API that converts Facebook and Twitter user data to the [Portable Contacts](http://portablecontacts.net/) format.
 
-http://facebook-poco.appspot.com/  
-http://twitter-poco.appspot.com/
+The REST API used to be hosted at these sites, but it's been turned down. Feel free to host it yourself!
+
+* ~~https://facebook-poco.appspot.com/~~
+* ~~https://twitter-poco.appspot.com/~~
 
 It's part of a suite of projects that implement the [OStatus](http://ostatus.org/) federation protocols for the major social networks. The other projects include [activitystreams-](https://github.com/snarfed/activitystreams-unofficial), [salmon-](https://github.com/snarfed/salmon-unofficial), [webfinger-](https://github.com/snarfed/webfinger-unofficial), and [ostatus-unofficial](https://github.com/snarfed/ostatus-unofficial).
 
@@ -27,7 +32,7 @@ License: This project is placed in the public domain.
 Using
 ---
 
-The library and REST API are both based on the [PortableContacts 1.0 Draft C spec](http://portablecontacts.net/draft-spec.html)
+The library and REST API are both based on the [Portable Contacts 1.0 Draft C spec](http://portablecontacts.net/draft-spec.html)
 
 Let's start with an example. This code using the library:
 
@@ -107,7 +112,7 @@ See the [example above](#using) for a quick start guide.
 
 Clone or download this repo into a directory named `portablecontacts_unofficial` (note the underscore instead of dash). Each source works the same way. Import the module for the source you want to use, then instantiate its class by passing the HTTP handler object. The handler should have a `request` attribute for the current HTTP request.
 
-The useful methods are `get_contact()` and `get_current_user()`, which returns the current authenticated user (if any). See the [individual method docstrings](https://github.com/snarfed/portablecontacts-unofficial/blob/master/source.py) for details. All return values are Python dicts of decoded PortableContacts JSON objects.
+The useful methods are `get_contact()` and `get_current_user()`, which returns the current authenticated user (if any). See the [individual method docstrings](https://github.com/snarfed/portablecontacts-unofficial/blob/master/source.py) for details. All return values are Python dicts of decoded Portable Contacts JSON objects.
 
 
 Future work
@@ -134,7 +139,7 @@ Pull requests are welcome! Feel free to [ping me](http://snarfed.org/about) with
 
 Most dependencies are included as git submodules. Be sure to run `git submodule init` after cloning this repo.
 
-[This PortableContacts test client and validator](http://www.plaxo.com/pdata/testClient) is useful for manual testing.
+[This Portable Contacts test client and validator](http://www.plaxo.com/pdata/testClient) is useful for manual testing.
 
 You can run the unit tests with `./alltests.py`. They depend on the [App Engine SDK](https://developers.google.com/appengine/downloads) and [mox](http://code.google.com/p/pymox/), both of which you'll need to install yourself.
 
